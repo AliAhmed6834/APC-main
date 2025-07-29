@@ -1,0 +1,64 @@
+Here’s the updated all-in-one prompt—now including a dedicated section for external API integrations to pull real-time pricing from parking suppliers:
+
+Prompt:
+“You are a Senior Software Developer with 10+ years of experience designing and building consumer-facing web platforms in the travel and mobility sector. Your task is to architect and specify a modern, sleek, and trustworthy airport-parking comparison website called Repliti Parking.
+
+Goals & Positioning:
+	•	Position Repliti Parking as the only site travelers trust for finding, comparing, and booking airport parking.
+	•	Convey a premium, data-driven, and user-centric experience.
+
+Key Features & Requirements:
+	1.	Full Comparison Engine
+	•	Integrate real-time rates from multiple parking suppliers and yard operators.
+	•	Normalize pricing (hourly, daily, weekly), distance to terminal, shuttle frequency, and user ratings.
+	•	Allow sorting, filtering, map-view, and side-by-side comparisons.
+	2.	External API Integrations
+	•	ParkWhiz API: fetch availability, pricing tiers, distance, cancellation policies.
+	•	SpotHero API: integrate search endpoints for rates & promos.
+	•	ParkMobile API: pull dynamic on-demand rates and loyalty discounts.
+	•	Airport Operators / Aggregators: connect via REST/GraphQL or SFTP feeds from airport-approved vendors (e.g., Secure-a-Spot, Airport Parking Reservations).
+	•	Connector Layer: build a microservice per supplier to handle auth (API-key/OAuth2), rate-limit handling, data mapping and incremental sync.
+	•	Caching & Fallback: cache responses for X minutes; fall back to last known rates if API is down.
+	3.	Supplier Management
+	•	Onboard and authenticate parking lot operators.
+	•	Dashboard for suppliers to update availability, pricing rules, promotions, and photos.
+	4.	Price-Match & Smart Recommendations
+	•	Highlight best deals, loyalty discounts, and dynamic surge pricing alerts.
+	•	Recommend best options based on user profile (e.g. business vs. family travel).
+	5.	Backend Admin Panel
+	•	Company-wide dashboard: user analytics, bookings overview, revenue reports, supplier performance metrics, content management.
+	•	Role-based access (admin, ops, marketing).
+	6.	SEO & Content Strategy
+	•	SEO-friendly routing, metadata, schema markup for local business and reviews.
+	•	Integrated blog area with CMS: guides, airport tips, parking hacks.
+	•	Generate XML sitemap and support hreflang for global audiences.
+	7.	Payments & Subscriptions
+	•	PCI-compliant checkout with support for cards, wallets, and buy-now-pay-later.
+	•	Subscription membership model (e.g. annual “Priority Parking Pass” with perks).
+	•	Automated invoicing, refunds, and multi-currency support.
+	8.	Sales Funnel & Marketing Automation
+	•	Email/SMS drip campaigns, abandoned-cart recovery, upsell cross-sell workflows.
+	•	Integration with CRM/marketing platforms (e.g. HubSpot, Mailchimp).
+	9.	Tech Stack Recommendations
+	•	Frontend: React/Next.js with Tailwind CSS for rapid, accessible, and SEO-ready UIs.
+	•	Backend: Node.js (NestJS) or Python (Django) for REST/GraphQL APIs.
+	•	Database: PostgreSQL with Redis for caching; Elasticsearch for search.
+	•	Hosting: Kubernetes on AWS/GCP, with CDN, WAF, and auto-scaling.
+	•	CI/CD, automated tests, monitoring (Sentry, Prometheus).
+
+Deliverables:
+	•	High-level system architecture diagram.
+	•	Detailed UI/UX wireframes for key flows (search → compare → checkout).
+	•	Database schema and major API endpoints, including supplier connector interfaces.
+	•	Admin dashboard feature list and wireframes.
+	•	List of SEO/content and marketing tasks.
+	•	Payment & subscription workflow specification.
+	•	Project roadmap with milestones, sprints, and cross-functional team needs.
+
+Tone & Quality:
+	•	Use clear, concise technical language.
+	•	Emphasize scalability, security, and performance best practices.
+	•	Provide code snippets or pseudo-code where helpful.
+	•	Be forward-thinking: propose potential AI-enhanced features (e.g. smarter recommendation engine, NLP chat support).”
+
+This will ensure your spec includes robust, scalable integrations with any parking-price API provider, making Repliti Parking the definitive booking hub! 🚀

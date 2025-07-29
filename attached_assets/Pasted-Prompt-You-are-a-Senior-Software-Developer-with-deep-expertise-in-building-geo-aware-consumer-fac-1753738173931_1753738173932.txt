@@ -1,0 +1,46 @@
+Prompt:
+“You are a Senior Software Developer with deep expertise in building geo-aware, consumer-facing web platforms for global audiences. Your task is to enhance Repliti Parking so that it automatically adjusts all content, pricing, and UX based on the user’s location (at a minimum supporting the UK and USA).
+
+Geo-Detection & Locale Handling:
+	•	Automatic Detection: Use IP-based lookup (e.g. MaxMind GeoIP2) and browser Accept-Language headers to resolve country/region on first visit. Fallback to user profile or manual selector.
+	•	Persistent Preference: Store locale in a cookie or user account; allow override via a location toggle in the header.
+
+Locale-Specific Adaptations:
+	1.	Currency & Pricing
+	•	Display prices in GBP for UK users, USD for US users.
+	•	Fetch latest exchange rates with a trusted API (e.g. Open Exchange Rates) and cache per region.
+	•	Ensure pricing comparisons normalize to local currency at booking time.
+	2.	Units & Formats
+	•	Distance: kilometres (km) in the UK; miles (mi) in the USA.
+	•	Date/time: DD/MM/YYYY and 24-hour clock for UK; MM/DD/YYYY and 12-hour for USA.
+	•	Formats for addresses, phone numbers, and postal codes.
+	3.	Terminology & Messaging
+	•	Use “car park” vs “parking lot,” “postcode” vs “ZIP code,” “lorry” vs “truck,” etc.
+	•	Localize button labels, error messages, and SEO metadata.
+	4.	Legal & Compliance
+	•	Display region-specific T&Cs, data-privacy notices (GDPR banner for UK/EU; CCPA notice for California).
+	•	Tax/VAT handling: show inclusive VAT rates in the UK; sales tax separately in the USA.
+
+Technical Implementation:
+	•	Frontend:
+	•	Next.js with built-in i18n routing (/[locale]/path) and dynamic imports for locale bundles.
+	•	Context provider (React Intl or i18next) for runtime formatting of dates, numbers, and messages.
+	•	Backend & API:
+	•	Accept a “locale” header on all API requests; apply locale transformations server-side when computing price quotes and content.
+	•	Middleware to resolve IP→region and inject locale into requests.
+	•	Caching & CDN:
+	•	Edge caching rules per locale path; separate CDN zones for UK and US to reduce latency.
+	•	Testing & QA:
+	•	Automated CI tests: locale-specific snapshots, E2E flows switching region.
+	•	Manual UAT in key browsers (UK/US) and VPN-based location tests.
+
+Deliverables:
+	•	Updated system diagram showing geo-detection flow.
+	•	UI wireframes for location toggle and locale-tailored pages.
+	•	Code snippets for Next.js i18n config and server middleware.
+	•	Test plan for verifying locale changes end-to-end.
+
+Tone & Quality:
+	•	Clear, concise technical specs.
+	•	Forward-thinking: propose AI-driven personalization (e.g. region-based parking tips).
+	•	Emphasize reliability and seamless user experience.”

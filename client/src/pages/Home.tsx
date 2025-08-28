@@ -5,9 +5,12 @@ import Footer from "@/components/Footer";
 import SearchForm from "@/components/SearchForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Clock, Car } from "lucide-react";
+import { MapPin, Calendar, Clock, Car, Map } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocale } from "@/contexts/LocaleContext";
+import { ParkingMap } from "@/components/ParkingMap";
+import { Badge } from "@/components/ui/badge";
+import { UKComplianceBanner } from "@/components/UKComplianceBanner";
 
 export default function Home() {
   const { user } = useAuth();
@@ -99,26 +102,30 @@ export default function Home() {
                             <MapPin className="w-4 h-4 text-primary mr-2" />
                             <span className="font-medium">{booking.airportCode}</span>
                           </div>
-                          <span className="text-sm text-green-600 font-medium">
+                          <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'}>
                             {booking.status}
-                          </span>
+                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <div className="text-sm text-gray-600 mb-2">
                           {booking.airportName}
-                        </p>
-                        <p className="text-sm text-gray-600 mb-2">
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
+                          {booking.startDate} - {booking.endDate}
+                        </div>
+                        <div className="text-sm text-gray-600 mb-2">
                           {booking.parkingLot}
-                        </p>
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 text-gray-400 mr-1" />
-                            <span>
-                              {booking.startDate} - {booking.endDate}
-                            </span>
-                          </div>
-                          <span className="font-medium">
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-lg">
                             {formatPrice(booking.price)}
                           </span>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => setLocation(`/manage-booking/${booking.id}`)}
+                          >
+                            Manage
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -126,6 +133,39 @@ export default function Home() {
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* UK Regulatory Compliance Banner */}
+          <UKComplianceBanner className="mt-6" />
+
+          {/* Interactive Parking Map */}
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Map className="w-5 h-5 mr-2" />
+                  Find Parking Near You
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Explore parking options on an interactive map
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ParkingMap 
+                  className="h-96 w-full rounded-lg"
+                  parkingLots={[]}
+                  onLotSelect={(lot) => {
+                    console.log('Selected parking lot:', lot);
+                    // You can navigate to search results or show lot details
+                  }}
+                  onDirections={(destination) => {
+                    console.log('Directions to:', destination);
+                    // Open Google Maps directions
+                    window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination[0]},${destination[1]}`, '_blank');
+                  }}
+                />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

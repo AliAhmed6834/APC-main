@@ -44,6 +44,12 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        brand: {
+          primary: '#0D2B4E', // Deep Blue
+          secondary: '#F26E2B', // Vibrant Orange
+          accent: '#00AEEF', // Light Blue
+          'accent-light': '#E6F7FE',
+        },
         chart: {
           "1": "var(--chart-1)",
           "2": "var(--chart-2)",

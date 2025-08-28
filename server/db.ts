@@ -1,26 +1,39 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import ws from "ws";
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from "@shared/schema";
 
-neonConfig.webSocketConstructor = ws;
+// Database configuration
+const getDatabaseConfig = () => {
+  if (process.env.DATABASE_URL) {
+    return { connectionString: process.env.DATABASE_URL };
+  }
+  
+  // Local development configuration
+  return {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432'),
+    database: process.env.DB_NAME || 'airport_parking_supplier',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'asd',
+  };
+};
 
-// For local development, use a mock database if DATABASE_URL is not set
-let pool: any;
+let pool: Pool;
 let db: any;
 
-if (!process.env.DATABASE_URL) {
-  console.warn("DATABASE_URL not set, using mock database for development");
-  // Create a mock pool for development
-  pool = {
-    query: async () => ({ rows: [] }),
-    end: async () => {},
-  };
+try {
+  const config = getDatabaseConfig();
+  pool = new Pool(config);
+  db = drizzle(pool, { schema });
   
-  db = drizzle({ client: pool, schema });
-} else {
-  pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  db = drizzle({ client: pool, schema });
+  if (process.env.DATABASE_URL) {
+    console.log("Connected to PostgreSQL database via DATABASE_URL");
+  } else {
+    console.log("Connected to local PostgreSQL database");
+  }
+} catch (error) {
+  console.error("Failed to connect to PostgreSQL:", error);
+  throw error; // Don't fall back to mock, require database connection
 }
 
 export { pool, db };

@@ -13,12 +13,12 @@
   --card-foreground: hsl(220, 13%, 15%);
   --border: hsl(220, 14%, 91%);
   --input: hsl(220, 14%, 91%);
-  --primary: hsl(218, 65%, 32%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(174, 72%, 56%);
-  --secondary-foreground: hsl(218, 65%, 32%);
-  --accent: hsl(35, 91%, 52%);
-  --accent-foreground: hsl(0, 0%, 100%);
+  --primary: 13 43 78; /* Deep Blue */
+  --primary-foreground: 255 255 255; /* White */
+  --secondary: 242 110 43; /* Vibrant Orange */
+  --secondary-foreground: 255 255 255; /* White */
+  --accent: 0 174 239; /* Light Blue */
+  --accent-foreground: 255 255 255; /* White */
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(0, 0%, 100%);
   --ring: hsl(218, 65%, 32%);

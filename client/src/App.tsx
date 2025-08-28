@@ -3,7 +3,6 @@ import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider } from "@/contexts/LocaleContext";
-import { SupplierAuthProvider } from "@/contexts/SupplierAuthContext";
 import Landing from "@/pages/Landing";
 import SearchResults from "@/pages/SearchResults";
 import About from "@/pages/About";
@@ -19,8 +18,19 @@ import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import ComplianceBanner from "@/components/ComplianceBanner";
 import ManageBooking from "@/pages/ManageBooking";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Dashboard from "@/pages/Dashboard";
+import Press from "@/pages/Press";
+import BookingHelp from "@/pages/BookingHelp";
+import BookingReservationsHelp from "@/pages/help/BookingReservationsHelp";
+import PaymentPricingHelp from "@/pages/help/PaymentPricingHelp";
+import ParkingLocationsHelp from "@/pages/help/ParkingLocationsHelp";
+import TravelDaySupportHelp from "@/pages/help/TravelDaySupportHelp";
 import SupplierLogin from "@/pages/SupplierLogin";
 import SupplierDashboard from "@/pages/SupplierDashboard";
+import AdminLogin from "@/pages/AdminLogin";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,13 +54,26 @@ function Router() {
       <Route path="/partners" component={Partners} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
-      <Route path="/booking/:lotId" component={BookingFlow} />
+      <Route path="/booking" component={BookingFlow} />
       <Route path="/home" component={Home} />
       <Route path="/manage-booking" component={ManageBooking} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/press" component={Press} />
+      <Route path="/booking-help" component={BookingHelp} />
+      <Route path="/help/booking-reservations" component={BookingReservationsHelp} />
+      <Route path="/help/payment-pricing" component={PaymentPricingHelp} />
+      <Route path="/help/parking-locations" component={ParkingLocationsHelp} />
+      <Route path="/help/travel-day-support" component={TravelDaySupportHelp} />
       
       {/* Supplier Routes */}
       <Route path="/supplier/login" component={SupplierLogin} />
       <Route path="/supplier/dashboard" component={SupplierDashboard} />
+      
+      {/* Admin Routes */}
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       
       <Route component={NotFound} />
     </Switch>
@@ -61,13 +84,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
-        <SupplierAuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-            <ComplianceBanner />
-          </TooltipProvider>
-        </SupplierAuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+          <ComplianceBanner />
+        </TooltipProvider>
       </LocaleProvider>
     </QueryClientProvider>
   );

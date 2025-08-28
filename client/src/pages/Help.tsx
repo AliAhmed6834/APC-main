@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,22 +11,26 @@ export default function Help() {
     {
       icon: Car,
       title: "Booking & Reservations",
-      description: "Questions about making and managing bookings"
+      description: "Questions about making and managing bookings",
+      href: "/help/booking-reservations"
     },
     {
       icon: CreditCard,
       title: "Payment & Pricing",
-      description: "Information about payments, refunds, and pricing"
+      description: "Information about payments, refunds, and pricing",
+      href: "/help/payment-pricing"
     },
     {
       icon: MapPin,
       title: "Parking Locations",
-      description: "Finding and accessing parking facilities"
+      description: "Finding and accessing parking facilities",
+      href: "/help/parking-locations"
     },
     {
       icon: Clock,
       title: "Travel Day Support",
-      description: "Help for the day of your travel"
+      description: "Help for the day of your travel",
+      href: "/help/travel-day-support"
     }
   ];
 
@@ -76,19 +81,21 @@ export default function Help() {
           {/* Help Categories */}
           <div className="grid md:grid-cols-2 gap-6 mb-12">
             {categories.map((category, index) => (
-              <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-3">
-                    <div className="bg-secondary/10 rounded-lg p-2">
-                      <category.icon className="w-6 h-6 text-secondary" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold">{category.title}</h3>
-                      <p className="text-sm text-gray-600 font-normal">{category.description}</p>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-              </Card>
+              <Link key={index} href={category.href}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-3">
+                      <div className="bg-secondary/10 rounded-lg p-2">
+                        <category.icon className="w-6 h-6 text-secondary" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">{category.title}</h3>
+                        <p className="text-sm text-gray-600 font-normal">{category.description}</p>
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                </Card>
+              </Link>
             ))}
           </div>
           

@@ -1,0 +1,1098 @@
+{
+  "id": "0003_admin_dashboard_schema",
+  "prevId": "0002_add_parking_lot_details_to_bookings",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "admin_users": {
+      "name": "admin_users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'admin'"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "true"
+        },
+        "last_login_at": {
+          "name": "last_login_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "permissions": {
+          "name": "permissions",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_admin_users_email": {
+          "name": "idx_admin_users_email",
+          "columns": ["email"]
+        },
+        "idx_admin_users_role": {
+          "name": "idx_admin_users_role",
+          "columns": ["role"]
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {
+        "admin_users_email_unique": {
+          "name": "admin_users_email_unique",
+          "columns": ["email"]
+        }
+      }
+    },
+    "admin_sessions": {
+      "name": "admin_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_admin_sessions_admin_user_id": {
+          "name": "idx_admin_sessions_admin_user_id",
+          "columns": ["admin_user_id"]
+        },
+        "idx_admin_sessions_token": {
+          "name": "idx_admin_sessions_token",
+          "columns": ["token"]
+        }
+      },
+      "foreignKeys": {
+        "admin_sessions_admin_user_id_admin_users_id_fk": {
+          "name": "admin_sessions_admin_user_id_admin_users_id_fk",
+          "tableName": "admin_sessions",
+          "columnNames": ["admin_user_id"],
+          "foreignTableName": "admin_users",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {
+        "admin_sessions_token_unique": {
+          "name": "admin_sessions_token_unique",
+          "columns": ["token"]
+        }
+      }
+    },
+    "admin_activity_logs": {
+      "name": "admin_activity_logs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "action_type": {
+          "name": "action_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "table_name": {
+          "name": "table_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "record_id": {
+          "name": "record_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "old_values": {
+          "name": "old_values",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "new_values": {
+          "name": "new_values",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "ip_address": {
+          "name": "ip_address",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "user_agent": {
+          "name": "user_agent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_admin_activity_logs_admin_user_id": {
+          "name": "idx_admin_activity_logs_admin_user_id",
+          "columns": ["admin_user_id"]
+        },
+        "idx_admin_activity_logs_action_type": {
+          "name": "idx_admin_activity_logs_action_type",
+          "columns": ["action_type"]
+        },
+        "idx_admin_activity_logs_table_name": {
+          "name": "idx_admin_activity_logs_table_name",
+          "columns": ["table_name"]
+        }
+      },
+      "foreignKeys": {
+        "admin_activity_logs_admin_user_id_admin_users_id_fk": {
+          "name": "admin_activity_logs_admin_user_id_admin_users_id_fk",
+          "tableName": "admin_activity_logs",
+          "columnNames": ["admin_user_id"],
+          "foreignTableName": "admin_users",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "customer_analytics": {
+      "name": "customer_analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "customer_id": {
+          "name": "customer_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "total_bookings": {
+          "name": "total_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_spent": {
+          "name": "total_spent",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "last_booking_date": {
+          "name": "last_booking_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "average_booking_value": {
+          "name": "average_booking_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "favorite_airport": {
+          "name": "favorite_airport",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "booking_frequency": {
+          "name": "booking_frequency",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "customer_satisfaction_score": {
+          "name": "customer_satisfaction_score",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_customer_analytics_customer_id": {
+          "name": "idx_customer_analytics_customer_id",
+          "columns": ["customer_id"]
+        }
+      },
+      "foreignKeys": {
+        "customer_analytics_customer_id_users_id_fk": {
+          "name": "customer_analytics_customer_id_users_id_fk",
+          "tableName": "customer_analytics",
+          "columnNames": ["customer_id"],
+          "foreignTableName": "users",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "supplier_analytics": {
+      "name": "supplier_analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "total_parking_lots": {
+          "name": "total_parking_lots",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_bookings": {
+          "name": "total_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_revenue": {
+          "name": "total_revenue",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "average_rating": {
+          "name": "average_rating",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_reviews": {
+          "name": "total_reviews",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "occupancy_rate": {
+          "name": "occupancy_rate",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "customer_satisfaction_score": {
+          "name": "customer_satisfaction_score",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "response_time_hours": {
+          "name": "response_time_hours",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_supplier_analytics_supplier_id": {
+          "name": "idx_supplier_analytics_supplier_id",
+          "columns": ["supplier_id"]
+        }
+      },
+      "foreignKeys": {
+        "supplier_analytics_supplier_id_parking_suppliers_id_fk": {
+          "name": "supplier_analytics_supplier_id_parking_suppliers_id_fk",
+          "tableName": "supplier_analytics",
+          "columnNames": ["supplier_id"],
+          "foreignTableName": "parking_suppliers",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "airport_analytics": {
+      "name": "airport_analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "airport_id": {
+          "name": "airport_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "total_parking_lots": {
+          "name": "total_parking_lots",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_bookings": {
+          "name": "total_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_revenue": {
+          "name": "total_revenue",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "average_rating": {
+          "name": "average_rating",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "popular_amenities": {
+          "name": "popular_amenities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "peak_booking_times": {
+          "name": "peak_booking_times",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "seasonal_trends": {
+          "name": "seasonal_trends",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_airport_analytics_airport_id": {
+          "name": "idx_airport_analytics_airport_id",
+          "columns": ["airport_id"]
+        }
+      },
+      "foreignKeys": {
+        "airport_analytics_airport_id_airports_id_fk": {
+          "name": "airport_analytics_airport_id_airports_id_fk",
+          "tableName": "airport_analytics",
+          "columnNames": ["airport_id"],
+          "foreignTableName": "airports",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "payment_analytics": {
+      "name": "payment_analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "payment_date": {
+          "name": "payment_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "total_transactions": {
+          "name": "total_transactions",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_amount": {
+          "name": "total_amount",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "successful_payments": {
+          "name": "successful_payments",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "failed_payments": {
+          "name": "failed_payments",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "refunded_payments": {
+          "name": "refunded_payments",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "payment_method_breakdown": {
+          "name": "payment_method_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "gateway_breakdown": {
+          "name": "gateway_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "currency_breakdown": {
+          "name": "currency_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "average_transaction_value": {
+          "name": "average_transaction_value",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_payment_analytics_payment_date": {
+          "name": "idx_payment_analytics_payment_date",
+          "columns": ["payment_date"]
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "booking_analytics": {
+      "name": "booking_analytics",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "booking_date": {
+          "name": "booking_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "total_bookings": {
+          "name": "total_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "confirmed_bookings": {
+          "name": "confirmed_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "cancelled_bookings": {
+          "name": "cancelled_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "completed_bookings": {
+          "name": "completed_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "no_show_bookings": {
+          "name": "no_show_bookings",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "0"
+        },
+        "total_revenue": {
+          "name": "total_revenue",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
+        },
+        "average_booking_duration": {
+          "name": "average_booking_duration",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "airport_breakdown": {
+          "name": "airport_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "supplier_breakdown": {
+          "name": "supplier_breakdown",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "seasonal_patterns": {
+          "name": "seasonal_patterns",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_booking_analytics_booking_date": {
+          "name": "idx_booking_analytics_booking_date",
+          "columns": ["booking_date"]
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {}
+    },
+    "system_settings": {
+      "name": "system_settings",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "setting_key": {
+          "name": "setting_key",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "setting_value": {
+          "name": "setting_value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "setting_type": {
+          "name": "setting_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'string'"
+        },
+        "category": {
+          "name": "category",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "is_public": {
+          "name": "is_public",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "false"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_system_settings_setting_key": {
+          "name": "idx_system_settings_setting_key",
+          "columns": ["setting_key"]
+        },
+        "idx_system_settings_category": {
+          "name": "idx_system_settings_category",
+          "columns": ["category"]
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {
+        "system_settings_setting_key_unique": {
+          "name": "system_settings_setting_key_unique",
+          "columns": ["setting_key"]
+        }
+      }
+    },
+    "admin_notifications": {
+      "name": "admin_notifications",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'info'"
+        },
+        "priority": {
+          "name": "priority",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'normal'"
+        },
+        "is_read": {
+          "name": "is_read",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "false"
+        },
+        "action_required": {
+          "name": "action_required",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "false"
+        },
+        "action_url": {
+          "name": "action_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_admin_notifications_admin_user_id": {
+          "name": "idx_admin_notifications_admin_user_id",
+          "columns": ["admin_user_id"]
+        },
+        "idx_admin_notifications_type": {
+          "name": "idx_admin_notifications_type",
+          "columns": ["type"]
+        },
+        "idx_admin_notifications_is_read": {
+          "name": "idx_admin_notifications_is_read",
+          "columns": ["is_read"]
+        }
+      },
+      "foreignKeys": {
+        "admin_notifications_admin_user_id_admin_users_id_fk": {
+          "name": "admin_notifications_admin_user_id_admin_users_id_fk",
+          "tableName": "admin_notifications",
+          "columnNames": ["admin_user_id"],
+          "foreignTableName": "admin_users",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "admin_reports": {
+      "name": "admin_reports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "admin_user_id": {
+          "name": "admin_user_id",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "report_name": {
+          "name": "report_name",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "report_type": {
+          "name": "report_type",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "report_format": {
+          "name": "report_format",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'json'"
+        },
+        "report_data": {
+          "name": "report_data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": null
+        },
+        "filters_applied": {
+          "name": "filters_applied",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "file_path": {
+          "name": "file_path",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": null
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_admin_reports_admin_user_id": {
+          "name": "idx_admin_reports_admin_user_id",
+          "columns": ["admin_user_id"]
+        },
+        "idx_admin_reports_report_type": {
+          "name": "idx_admin_reports_report_type",
+          "columns": ["report_type"]
+        }
+      },
+      "foreignKeys": {
+        "admin_reports_admin_user_id_admin_users_id_fk": {
+          "name": "admin_reports_admin_user_id_admin_users_id_fk",
+          "tableName": "admin_reports",
+          "columnNames": ["admin_user_id"],
+          "foreignTableName": "admin_users",
+          "foreignColumnNames": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  }
+}

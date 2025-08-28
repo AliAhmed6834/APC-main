@@ -11,6 +11,23 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MapPin, List, Grid } from "lucide-react";
 import type { ParkingLot } from "@shared/schema";
 
+// Extended interface for parking lot with pricing
+interface ParkingLotWithPricing extends ParkingLot {
+  pricing?: Array<{
+    id: string;
+    lotId: string;
+    priceType: string;
+    basePrice: string;
+    currency: string;
+    localizedPrice: string;
+    taxRate: string;
+    region: string;
+    discountedPrice?: string;
+    isActive: boolean;
+    createdAt: Date;
+  }>;
+}
+
 export default function SearchResults() {
   const [location, setLocation] = useLocation();
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -18,55 +35,96 @@ export default function SearchResults() {
   const [filters, setFilters] = useState<any>({});
 
   // Parse search parameters from URL
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
-  const airportCode = searchParams.get('airportCode') || 'LAX';
-  const startDate = searchParams.get('startDate') || '';
-  const endDate = searchParams.get('endDate') || '';
+  const searchParams = new URLSearchParams(window.location.search);
+  const airportCode = searchParams.get('airportCode');
+  const startDate = searchParams.get('startDate');
+  const endDate = searchParams.get('endDate');
+  
+  console.log('🔍 SearchResults - Location:', location);
+  console.log('🔍 SearchResults - Airport Code:', airportCode);
+  console.log('🔍 SearchResults - Start Date:', startDate);
+  console.log('🔍 SearchResults - End Date:', endDate);
+  
+  // Redirect to home if no search parameters
+  useEffect(() => {
+    console.log('🔍 SearchResults - useEffect triggered');
+    console.log('🔍 SearchResults - Checking parameters:', { airportCode, startDate, endDate });
+    
+    // Temporarily disable redirect to test search functionality
+    if (!airportCode || !startDate || !endDate) {
+      console.log('🔍 SearchResults - Missing parameters but staying on page for testing');
+      // setLocation('/'); // Commented out for testing
+    } else {
+      console.log('🔍 SearchResults - Parameters valid, staying on page');
+    }
+  }, [airportCode, startDate, endDate, setLocation]);
 
-  const { data: parkingLots, isLoading, error } = useQuery<any[]>({
+  const { data: parkingLots, isLoading, error, refetch } = useQuery<any[]>({
     queryKey: ['/api/parking/search', { airportCode, startDate, endDate, filters }],
     queryFn: async () => {
+      console.log('🔍 SearchResults - useQuery executing');
       const params = new URLSearchParams({
-        airportCode,
-        startDate,
-        endDate,
+        airportCode: airportCode || '',
+        startDate: startDate || '',
+        endDate: endDate || '',
         ...filters
       });
-      const response = await fetch(`/api/parking/search?${params}`);
+      const apiUrl = `/api/parking/search?${params}`;
+      console.log('🔍 SearchResults - API URL:', apiUrl);
+      
+      const response = await fetch(apiUrl);
       if (!response.ok) {
         throw new Error('Failed to search parking');
       }
-      return response.json();
+      const data = await response.json();
+      console.log('🔍 SearchResults - API response:', data.length, 'parking lots');
+      return data;
     },
-    enabled: !!airportCode && !!startDate && !!endDate,
+    enabled: true, // Always enable for testing
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  useEffect(() => {
+    if (airportCode && startDate && endDate) {
+      refetch();
+    }
+  }, [airportCode, startDate, endDate, refetch]);
 
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
   };
 
-  const handleBookNow = (lotId: string) => {
-    // Navigate to booking flow with lot details
+  const handleBookNow = (lotId: string, pricing?: { localizedPrice: string; taxRate: string }) => {
+    // Navigate to booking flow with lot details and pricing
     const bookingParams = new URLSearchParams({
-      lotId: lotId,
-      startDate,
-      endDate,
+      lotId,
+      startDate: startDate || '',
+      endDate: endDate || '',
     });
+    
+    // Add pricing information if available
+    if (pricing) {
+      bookingParams.set('pricePerDay', pricing.localizedPrice);
+      bookingParams.set('taxRate', pricing.taxRate);
+    }
+    
     setLocation(`/booking?${bookingParams.toString()}`);
   };
 
-  const calculatePrice = (lot: ParkingLot) => {
-    // Simple pricing calculation - in real app this would come from pricing table
-    const basePrices: Record<string, number> = {
-      'premium': 24.99,
-      'standard': 18.99,
-      'economy': 12.99,
-    };
+  const calculatePrice = (lot: ParkingLotWithPricing) => {
+    // Use dynamic pricing from the parking lot data if available
+    if (lot.pricing && lot.pricing.length > 0) {
+      // Find daily pricing
+      const dailyPricing = lot.pricing.find((p: any) => p.priceType === 'daily');
+      if (dailyPricing) {
+        return parseFloat(dailyPricing.localizedPrice);
+      }
+    }
     
-    const lotType = lot.name.toLowerCase().includes('premium') ? 'premium' :
-                   lot.name.toLowerCase().includes('economy') ? 'economy' : 'standard';
-    
-    return basePrices[lotType] || 18.99;
+    // Fallback to a reasonable default if no pricing is available
+    // This would be replaced by actual pricing API in production
+    return 18.99;
   };
 
   if (isLoading) {
@@ -83,7 +141,32 @@ export default function SearchResults() {
     );
   }
 
-  if (error || !parkingLots) {
+  if (error) {
+    console.log('🔍 SearchResults - Error occurred:', error);
+    return (
+      <div className="min-h-screen bg-white">
+        <Header />
+        <div className="container mx-auto px-4 py-12">
+          <Card>
+            <CardContent className="py-12 text-center">
+              <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-neutral-dark mb-2">Error loading results</h3>
+              <p className="text-neutral-dark mb-4">
+                There was an error loading parking results. Please try again.
+              </p>
+              <Button onClick={() => window.history.back()}>
+                Go Back
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!parkingLots || parkingLots.length === 0) {
+    console.log('🔍 SearchResults - No parking lots found');
     return (
       <div className="min-h-screen bg-white">
         <Header />
@@ -93,7 +176,7 @@ export default function SearchResults() {
               <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-neutral-dark mb-2">No results found</h3>
               <p className="text-neutral-dark mb-4">
-                We couldn't find any parking options for {airportCode}. Please try a different airport or dates.
+                We couldn't find any parking options for {airportCode || 'the selected airport'}. Please try a different airport or dates.
               </p>
               <Button onClick={() => window.history.back()}>
                 Go Back
@@ -161,6 +244,7 @@ export default function SearchResults() {
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
+
             <SearchResultsLocalized 
               lots={parkingLots || []} 
               onBooking={handleBookNow}

@@ -1,4 +1,4 @@
-# Repliti Parking - Airport Parking Comparison Platform
+# - Airport Parking Comparison Platform
 
 ## Overview
 

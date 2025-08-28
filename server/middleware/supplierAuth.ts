@@ -1,140 +1,76 @@
 import { Request, Response, NextFunction } from 'express';
-import { SupplierAuthService, type SupplierSession } from '../supplierAuth';
+import { storage } from '../storage';
+import { supplierLoginSchema } from '@shared/schema';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
-export interface SupplierRequest extends Request {
-  supplier?: SupplierSession;
+// Extend Express Request interface to include supplier user
+declare global {
+  namespace Express {
+    interface Request {
+      supplierUser?: any;
+    }
+  }
 }
 
-/**
- * Middleware to authenticate supplier users
- */
-export const isSupplierAuthenticated = async (
-  req: SupplierRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export interface SupplierAuthRequest extends Request {
+  supplierUser?: any;
+}
+
+// Middleware to check if supplier is authenticated
+export const isSupplierAuthenticated = async (req: SupplierAuthRequest, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers.authorization;
-    const sessionToken = req.cookies?.supplier_session;
-
-    if (!authHeader && !sessionToken) {
-      return res.status(401).json({ 
-        message: 'Authentication required',
-        code: 'SUPPLIER_AUTH_REQUIRED'
-      });
-    }
-
-    // Try to get token from Authorization header or cookie
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
-      : sessionToken;
-
+    const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.supplierToken;
+    
     if (!token) {
-      return res.status(401).json({ 
-        message: 'Invalid authentication token',
-        code: 'INVALID_TOKEN'
-      });
+      return res.status(401).json({ message: 'Authentication required' });
     }
 
-    // Validate session
-    const session = await SupplierAuthService.validateSession(token);
-    if (!session) {
-      return res.status(401).json({ 
-        message: 'Session expired or invalid',
-        code: 'SESSION_EXPIRED'
-      });
+    const session = await storage.getSupplierSession(token);
+    if (!session || new Date() > session.expiresAt) {
+      return res.status(401).json({ message: 'Invalid or expired session' });
     }
 
-    // Add supplier context to request
-    req.supplier = session;
+    const supplierUser = await storage.getSupplierUser(session.supplierUserId);
+    if (!supplierUser || !supplierUser.isActive) {
+      return res.status(401).json({ message: 'User account is inactive' });
+    }
+
+    req.supplierUser = supplierUser;
     next();
   } catch (error) {
     console.error('Supplier authentication error:', error);
-    return res.status(500).json({ 
-      message: 'Authentication failed',
-      code: 'AUTH_ERROR'
-    });
+    res.status(500).json({ message: 'Authentication failed' });
   }
 };
 
-/**
- * Middleware to check if supplier has specific role
- */
-export const requireSupplierRole = (allowedRoles: string[]) => {
-  return (req: SupplierRequest, res: Response, next: NextFunction) => {
-    if (!req.supplier) {
-      return res.status(401).json({ 
-        message: 'Authentication required',
-        code: 'SUPPLIER_AUTH_REQUIRED'
-      });
+// Middleware to check if supplier has specific role
+export const requireSupplierRole = (roles: string[]) => {
+  return (req: SupplierAuthRequest, res: Response, next: NextFunction) => {
+    if (!req.supplierUser) {
+      return res.status(401).json({ message: 'Authentication required' });
     }
 
-    if (!allowedRoles.includes(req.supplier.role)) {
-      return res.status(403).json({ 
-        message: 'Insufficient permissions',
-        code: 'INSUFFICIENT_PERMISSIONS'
-      });
+    if (!roles.includes(req.supplierUser.role)) {
+      return res.status(403).json({ message: 'Insufficient permissions' });
     }
 
     next();
   };
 };
 
-/**
- * Middleware to check if supplier owns the resource
- */
-export const requireSupplierOwnership = (resourceSupplierIdField: string) => {
-  return (req: SupplierRequest, res: Response, next: NextFunction) => {
-    if (!req.supplier) {
-      return res.status(401).json({ 
-        message: 'Authentication required',
-        code: 'SUPPLIER_AUTH_REQUIRED'
-      });
-    }
-
-    const resourceSupplierId = req.body[resourceSupplierIdField] || req.params[resourceSupplierIdField];
-    
-    if (resourceSupplierId !== req.supplier.supplierId) {
-      return res.status(403).json({ 
-        message: 'Access denied - resource ownership required',
-        code: 'OWNERSHIP_REQUIRED'
-      });
-    }
-
-    next();
-  };
+// Helper function to generate secure token
+export const generateSupplierToken = (): string => {
+  return crypto.randomBytes(32).toString('hex');
 };
 
-/**
- * Optional authentication middleware - doesn't fail if no auth provided
- */
-export const optionalSupplierAuth = async (
-  req: SupplierRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const authHeader = req.headers.authorization;
-    const sessionToken = req.cookies?.supplier_session;
+// Helper function to hash password
+export const hashPassword = async (password: string): Promise<string> => {
+  const saltRounds = 12;
+  return bcrypt.hash(password, saltRounds);
+};
 
-    if (!authHeader && !sessionToken) {
-      return next(); // Continue without authentication
-    }
-
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
-      : sessionToken;
-
-    if (token) {
-      const session = await SupplierAuthService.validateSession(token);
-      if (session) {
-        req.supplier = session;
-      }
-    }
-
-    next();
-  } catch (error) {
-    console.error('Optional supplier authentication error:', error);
-    next(); // Continue even if auth fails
-  }
+// Helper function to verify password
+export const verifyPassword = async (password: string, hashedPassword: string): Promise<boolean> => {
+  return bcrypt.compare(password, hashedPassword);
 }; 

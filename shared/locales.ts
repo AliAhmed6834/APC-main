@@ -60,6 +60,170 @@ export const LOCALE_CONFIG: Record<SupportedLocale, LocaleInfo> = {
   }
 };
 
+// UK Regulatory Compliance Configuration
+export const UK_REGULATORY_CONFIG = {
+  // Data Protection (GDPR)
+  gdpr: {
+    dataRetentionDays: 2555, // 7 years
+    consentRequired: true,
+    rightToErasure: true,
+    dataPortability: true,
+    privacyNoticeRequired: true,
+  },
+  // Financial Services
+  financial: {
+    pciCompliance: true,
+    fraudPrevention: true,
+    refundTimeframe: 14, // days
+    disputeResolution: 'Financial Ombudsman Service',
+  },
+  // Consumer Rights
+  consumer: {
+    coolingOffPeriod: 14, // days
+    cancellationRights: true,
+    priceTransparency: true,
+    termsClarity: true,
+  },
+  // Accessibility
+  accessibility: {
+    wcagCompliance: 'AA',
+    disabledParkingRequired: true,
+    assistanceAvailable: true,
+    multiLanguageSupport: true,
+  },
+  // Environmental
+  environmental: {
+    evChargingRequired: true,
+    carbonOffsetting: true,
+    sustainableMaterials: true,
+    wasteManagement: true,
+  }
+};
+
+// UK Airport Codes and Information
+export const UK_AIRPORTS = {
+  'LHR': {
+    name: 'London Heathrow Airport',
+    city: 'London',
+    region: 'Greater London',
+    postcode: 'TW6 1EW',
+    coordinates: [51.4700, -0.4543],
+    terminals: ['T2', 'T3', 'T4', 'T5'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Business', 'Premium'],
+    regulatoryZone: 'London',
+    congestionCharge: true,
+    ulezZone: true,
+  },
+  'LGW': {
+    name: 'London Gatwick Airport',
+    city: 'London',
+    region: 'West Sussex',
+    postcode: 'RH6 0NP',
+    coordinates: [51.1537, -0.1821],
+    terminals: ['North', 'South'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Valet'],
+    regulatoryZone: 'London',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'STN': {
+    name: 'London Stansted Airport',
+    city: 'London',
+    region: 'Essex',
+    postcode: 'CM24 1RW',
+    coordinates: [51.8860, 0.2389],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Meet & Greet'],
+    regulatoryZone: 'London',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'LTN': {
+    name: 'London Luton Airport',
+    city: 'London',
+    region: 'Bedfordshire',
+    postcode: 'LU2 9QT',
+    coordinates: [51.8747, -0.3683],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Valet'],
+    regulatoryZone: 'London',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'LCY': {
+    name: 'London City Airport',
+    city: 'London',
+    region: 'Greater London',
+    postcode: 'E16 2PX',
+    coordinates: [51.5053, 0.0553],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium'],
+    regulatoryZone: 'London',
+    congestionCharge: true,
+    ulezZone: true,
+  },
+  'MAN': {
+    name: 'Manchester Airport',
+    city: 'Manchester',
+    region: 'Greater Manchester',
+    postcode: 'M90 1QX',
+    coordinates: [53.3537, -2.2750],
+    terminals: ['T1', 'T2', 'T3'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Valet'],
+    regulatoryZone: 'Manchester',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'BHX': {
+    name: 'Birmingham Airport',
+    city: 'Birmingham',
+    region: 'West Midlands',
+    postcode: 'B26 3QJ',
+    coordinates: [52.4539, -1.7480],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Meet & Greet'],
+    regulatoryZone: 'Birmingham',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'EDI': {
+    name: 'Edinburgh Airport',
+    city: 'Edinburgh',
+    region: 'Scotland',
+    postcode: 'EH12 9DN',
+    coordinates: [55.9500, -3.3725],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium', 'Valet'],
+    regulatoryZone: 'Scotland',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'BRS': {
+    name: 'Bristol Airport',
+    city: 'Bristol',
+    region: 'Somerset',
+    postcode: 'BS48 3DY',
+    coordinates: [51.3829, -2.7179],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium'],
+    regulatoryZone: 'Bristol',
+    congestionCharge: false,
+    ulezZone: false,
+  },
+  'NCL': {
+    name: 'Newcastle Airport',
+    city: 'Newcastle',
+    region: 'Tyne and Wear',
+    postcode: 'NE13 8BZ',
+    coordinates: [55.0375, -1.6917],
+    terminals: ['Main Terminal'],
+    parkingZones: ['Short Stay', 'Long Stay', 'Premium'],
+    regulatoryZone: 'Newcastle',
+    congestionCharge: false,
+    ulezZone: false,
+  }
+};
+
 // Default messages for React Intl
 export const DEFAULT_MESSAGES = {
   'en-US': {
@@ -127,8 +291,8 @@ export const DEFAULT_MESSAGES = {
     // Pricing and currency
     'price.per.day': '£{price}/day',
     'price.total': 'Total: £{price}',
-    'price.includes.tax': 'Includes VAT',
-    'price.plus.tax': 'Plus {tax}% VAT',
+    'price.includes.vat': 'Includes VAT',
+    'price.plus.vat': 'Plus {tax}% VAT',
     
     // Distance and units
     'distance.from.terminal': '{distance} km from terminal',
@@ -139,7 +303,7 @@ export const DEFAULT_MESSAGES = {
     'booking.vehicle.info': 'Vehicle Details',
     'booking.vehicle.make': 'Make',
     'booking.vehicle.model': 'Model',
-    'booking.vehicle.color': 'Colour',
+    'booking.vehicle.colour': 'Colour',
     'booking.vehicle.license': 'Number Plate',
     'booking.confirm': 'Confirm Booking',
     
@@ -157,6 +321,14 @@ export const DEFAULT_MESSAGES = {
     'status.completed': 'Completed',
     'notification.booking.confirmed': 'Your booking has been confirmed',
     'notification.booking.cancelled': 'Your booking has been cancelled',
+    
+    // UK-specific regulatory messages
+    'regulatory.gdpr.consent': 'By continuing, you consent to our use of cookies and data processing in accordance with GDPR',
+    'regulatory.vat.included': 'All prices include VAT at 20%',
+    'regulatory.consumer.rights': 'You have 14 days to cancel this booking under UK consumer law',
+    'regulatory.accessibility': 'This service meets WCAG AA accessibility standards',
+    'regulatory.ulez.warning': 'This location is within the Ultra Low Emission Zone. Additional charges may apply.',
+    'regulatory.congestion.charge': 'This location is within the London Congestion Charge zone.',
   }
 };
 
@@ -172,4 +344,28 @@ export const CURRENCY_SYMBOLS: Record<string, string> = {
   'USD': '$',
   'GBP': '£',
   'EUR': '€',
+};
+
+// UK Regulatory Compliance Messages
+export const UK_COMPLIANCE_MESSAGES = {
+  gdpr: {
+    consent: 'We use cookies and process your data in accordance with GDPR regulations',
+    rights: 'You have the right to access, rectify, and erase your personal data',
+    retention: 'We retain your data for 7 years as required by UK law',
+  },
+  financial: {
+    security: 'All payments are processed securely with PCI DSS compliance',
+    protection: 'Your financial information is protected under UK financial regulations',
+    disputes: 'Disputes can be resolved through the Financial Ombudsman Service',
+  },
+  consumer: {
+    rights: 'You have 14 days to cancel under UK consumer law',
+    transparency: 'All prices include VAT and are fully transparent',
+    terms: 'Terms and conditions are clearly displayed and easily accessible',
+  },
+  accessibility: {
+    standards: 'This service meets WCAG AA accessibility standards',
+    assistance: 'Assistance is available for disabled users',
+    support: 'Multi-language support including Welsh and Gaelic',
+  }
 };

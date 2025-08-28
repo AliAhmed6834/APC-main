@@ -44,7 +44,7 @@ interface LocalizedParkingLot {
 
 interface SearchResultsLocalizedProps {
   lots: LocalizedParkingLot[];
-  onBooking: (lotId: string) => void;
+  onBooking: (lotId: string, pricing?: { localizedPrice: string; taxRate: string }) => void;
   isLoading?: boolean;
 }
 
@@ -197,7 +197,7 @@ export default function SearchResultsLocalized({
                 )}
                 
                 <Button 
-                  onClick={() => onBooking(lot.id)}
+                  onClick={() => onBooking(lot.id, lot.pricing)}
                   className="w-full"
                   size="lg"
                 >

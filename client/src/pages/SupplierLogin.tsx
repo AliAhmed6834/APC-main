@@ -1,314 +1,148 @@
 import React, { useState } from 'react';
 import { useLocation } from 'wouter';
-import { useSupplierAuth } from '../contexts/SupplierAuthContext';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Separator } from '../components/ui/separator';
-import { Badge } from '../components/ui/badge';
-import { Building2, Lock, Mail, User, Car, Shield } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
-const SupplierLogin: React.FC = () => {
+export default function SupplierLogin() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [, setLocation] = useLocation();
-  const { login, register, isLoading } = useSupplierAuth();
-  const [activeTab, setActiveTab] = useState('login');
+  const { toast } = useToast();
 
-  const [loginData, setLoginData] = useState({
-    email: '',
-    password: '',
-  });
-
-  const [registerData, setRegisterData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: '',
-    firstName: '',
-    lastName: '',
-    supplierId: '',
-    role: 'manager' as 'owner' | 'manager' | 'staff',
-  });
-
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(loginData.email, loginData.password);
-    if (success) {
-      setLocation('/supplier/dashboard');
-    }
-  };
+    setIsLoading(true);
+    setError('');
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (registerData.password !== registerData.confirmPassword) {
-      // Handle password mismatch
-      return;
-    }
-    
-    const success = await register({
-      email: registerData.email,
-      password: registerData.password,
-      firstName: registerData.firstName,
-      lastName: registerData.lastName,
-      supplierId: registerData.supplierId || undefined,
-      role: registerData.role,
-    });
-    
-    if (success) {
-      setActiveTab('login');
-      setRegisterData({
-        email: '',
-        password: '',
-        confirmPassword: '',
-        firstName: '',
-        lastName: '',
-        supplierId: '',
-        role: 'manager',
+    try {
+      const response = await fetch('/api/supplier/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store supplier token
+      localStorage.setItem('supplierToken', data.token);
+      localStorage.setItem('supplierUser', JSON.stringify(data.user));
+
+      toast({
+        title: "Login successful",
+        description: `Welcome back, ${data.user.firstName}!`,
+      });
+
+      setLocation('/supplier/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Side - Info */}
-        <div className="hidden lg:flex flex-col justify-center space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Building2 className="h-8 w-8 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Supplier Portal</h1>
-                <p className="text-gray-600">Manage your parking facilities</p>
-              </div>
+      <div className="w-full max-w-md">
+        <Card className="shadow-xl">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4 w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
             </div>
-            
-            <div className="space-y-4">
-              <div className="flex items-center space-x-3">
-                <Car className="h-5 w-5 text-green-600" />
-                <span className="text-gray-700">Manage parking lots and pricing</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Shield className="h-5 w-5 text-blue-600" />
-                <span className="text-gray-700">Track bookings and revenue</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Lock className="h-5 w-5 text-purple-600" />
-                <span className="text-gray-700">Secure access and analytics</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/50 backdrop-blur-sm rounded-lg p-6 border border-white/20">
-            <h3 className="font-semibold text-gray-900 mb-3">Why join our platform?</h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <Badge className="mt-1 bg-green-100 text-green-800">✓</Badge>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Increased Visibility</p>
-                  <p className="text-xs text-gray-600">Reach more customers through our platform</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Badge className="mt-1 bg-green-100 text-green-800">✓</Badge>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Easy Management</p>
-                  <p className="text-xs text-gray-600">Simple tools to manage your operations</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <Badge className="mt-1 bg-green-100 text-green-800">✓</Badge>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Real-time Analytics</p>
-                  <p className="text-xs text-gray-600">Track performance and optimize pricing</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Side - Auth Forms */}
-        <div className="flex items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
-              <CardDescription className="text-center">
-                Access your supplier dashboard
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="register">Register</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login" className="space-y-4">
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={loginData.email}
-                          onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="Enter your password"
-                          value={loginData.password}
-                          onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Signing in...' : 'Sign In'}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="register" className="space-y-4">
-                  <form onSubmit={handleRegister} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName">First Name</Label>
-                        <div className="relative">
-                          <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="firstName"
-                            placeholder="First name"
-                            value={registerData.firstName}
-                            onChange={(e) => setRegisterData({ ...registerData, firstName: e.target.value })}
-                            className="pl-10"
-                            required
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName">Last Name</Label>
-                        <Input
-                          id="lastName"
-                          placeholder="Last name"
-                          value={registerData.lastName}
-                          onChange={(e) => setRegisterData({ ...registerData, lastName: e.target.value })}
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="registerEmail">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="registerEmail"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={registerData.email}
-                          onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="registerPassword">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="registerPassword"
-                          type="password"
-                          placeholder="Create a password"
-                          value={registerData.password}
-                          onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="confirmPassword"
-                          type="password"
-                          placeholder="Confirm your password"
-                          value={registerData.confirmPassword}
-                          onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="supplierId">Supplier ID (Optional)</Label>
-                      <Input
-                        id="supplierId"
-                        placeholder="Enter supplier ID if you have one"
-                        value={registerData.supplierId}
-                        onChange={(e) => setRegisterData({ ...registerData, supplierId: e.target.value })}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="role">Role</Label>
-                      <select
-                        id="role"
-                        value={registerData.role}
-                        onChange={(e) => setRegisterData({ ...registerData, role: e.target.value as any })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="manager">Manager</option>
-                        <option value="owner">Owner</option>
-                        <option value="staff">Staff</option>
-                      </select>
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? 'Creating account...' : 'Create Account'}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+            <CardTitle className="text-2xl font-bold text-gray-900">Supplier Login</CardTitle>
+            <CardDescription className="text-gray-600">
+              Access your parking management dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               
-              <Separator className="my-6" />
-              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Signing in...</span>
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                Don't have an account?{' '}
+                <button
+                  onClick={() => setLocation('/supplier/register')}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Contact us
+                </button>
+              </p>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  Need help?{' '}
-                  <a href="/contact" className="text-blue-600 hover:underline">
-                    Contact support
-                  </a>
+                <p className="text-xs text-gray-500">
+                  Demo Credentials:
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Email: supplier@example.com<br />
+                  Password: any password
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-};
-
-export default SupplierLogin; 
+} 

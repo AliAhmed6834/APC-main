@@ -1,11 +1,16 @@
 import { Client } from 'pg';
-import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config();
+// Get database URL from environment variable directly
+const DATABASE_URL = process.env.DATABASE_URL;
+
+if (!DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is not set');
+  console.log('Please make sure your database connection string is configured');
+  process.exit(1);
+}
 
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: DATABASE_URL,
 });
 
 async function discoverAllTables() {

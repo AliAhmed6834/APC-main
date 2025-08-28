@@ -2,8 +2,46 @@ import express from 'express';
 import { db } from '../db';
 import { airports, bookings, users, parkingSuppliers, parkingLots } from '../../shared/schema';
 import { eq, desc, asc, sql } from 'drizzle-orm';
+import path from 'path';
+import fs from 'fs';
 
 const router = express.Router();
+
+// Serve the database inspection page
+router.get('/inspect', (req, res) => {
+  try {
+    const htmlPath = path.join(__dirname, '../../database-inspection.html');
+    if (fs.existsSync(htmlPath)) {
+      res.sendFile(htmlPath);
+    } else {
+      res.status(404).send('Database inspection page not found');
+    }
+  } catch (error) {
+    res.status(500).send('Error serving database inspection page');
+  }
+});
+
+// Alternative: Serve HTML content directly
+router.get('/inspect-html', (req, res) => {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Inspection - Redirect</title>
+    </head>
+    <body>
+        <h1>Database Inspection</h1>
+        <p>Redirecting to the full inspection page...</p>
+        <script>
+            window.location.href = '/api/admin/inspect';
+        </script>
+    </body>
+    </html>
+  `);
+});
 
 // Middleware to check if user is admin (basic implementation)
 const isAdmin = (req: any, res: any, next: any) => {
@@ -32,11 +70,7 @@ router.get('/airports', async (req, res) => {
         name: airports.name,
         city: airports.city,
         country: airports.country,
-        adminNotes: airports.adminNotes,
-        priorityLevel: airports.priorityLevel,
-        maintenanceMode: airports.maintenanceMode,
-        createdAt: airports.createdAt,
-        updatedAt: airports.updatedAt
+        createdAt: airports.createdAt
       })
       .from(airports)
       .orderBy(asc(airports.code));
@@ -44,7 +78,7 @@ router.get('/airports', async (req, res) => {
     res.json(airportsList);
   } catch (error) {
     console.error('Error fetching airports:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch airports',
       details: error instanceof Error ? error.message : 'Unknown error'
     });

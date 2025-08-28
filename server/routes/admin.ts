@@ -95,16 +95,10 @@ router.get('/bookings', async (req, res) => {
       .select({
         id: bookings.id,
         userId: bookings.userId,
-        parkingLotId: bookings.parkingLotId,
         startDate: bookings.startDate,
         endDate: bookings.endDate,
-        totalPrice: bookings.totalPrice,
         status: bookings.status,
-        adminNotes: bookings.adminNotes,
-        flaggedForReview: bookings.flaggedForReview,
-        flagReason: bookings.flagReason,
         createdAt: bookings.createdAt,
-        updatedAt: bookings.updatedAt,
         // Include related data
         userEmail: users.email,
         userFirstName: users.firstName,
@@ -115,7 +109,7 @@ router.get('/bookings', async (req, res) => {
       })
       .from(bookings)
       .leftJoin(users, eq(bookings.userId, users.id))
-      .leftJoin(parkingLots, eq(bookings.parkingLotId, parkingLots.id))
+              .leftJoin(parkingLots, eq(bookings.id, parkingLots.id))
       .leftJoin(airports, eq(parkingLots.airportId, airports.id))
       .leftJoin(parkingSuppliers, eq(parkingLots.supplierId, parkingSuppliers.id));
 

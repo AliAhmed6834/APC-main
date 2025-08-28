@@ -27,6 +27,8 @@ import {
   verifyPassword,
   type SupplierAuthRequest 
 } from "./middleware/supplierAuth";
+import path from 'path';
+import fs from 'fs';
 
 // Helper function to check if a date is a holiday (basic implementation)
 function isHoliday(date: Date): boolean {
@@ -2329,6 +2331,66 @@ app.get('/api/admin/bookings', async (req, res) => {
     app.use('/api/admin', adminRouter.default);
   }).catch(error => {
     console.error('Failed to load admin routes:', error);
+  });
+
+  // Serve database inspection page
+  app.get('/database-inspection.html', (req, res) => {
+    // Try multiple possible locations
+    const possiblePaths = [
+      path.join(__dirname, '../database-inspection.html'),           // ../database-inspection.html
+      path.join(__dirname, '../../database-inspection.html'),        // ../../database-inspection.html
+      path.join(__dirname, '../client/public/database-inspection.html'), // ../client/public/database-inspection.html
+      path.join(__dirname, '../public/database-inspection.html'),    // ../public/database-inspection.html
+      path.join(process.cwd(), 'database-inspection.html'),         // Current working directory
+      path.join(process.cwd(), 'client/public/database-inspection.html') // Client public directory
+    ];
+    
+    console.log('Looking for database-inspection.html in possible paths:');
+    possiblePaths.forEach((p, i) => console.log(`${i + 1}. ${p}`));
+    
+    // Find the first existing path
+    const existingPath = possiblePaths.find(p => fs.existsSync(p));
+    
+    if (existingPath) {
+      console.log('Found file at:', existingPath);
+      res.sendFile(existingPath);
+    } else {
+      console.error('File not found in any of the possible paths');
+      res.status(404).send(`
+        <h1>Database Inspection Page Not Found</h1>
+        <p>The file database-inspection.html could not be found in any of these locations:</p>
+        <ul>
+          ${possiblePaths.map(p => `<li>${p}</li>`).join('')}
+        </ul>
+        <p>Please ensure the file exists in one of these locations.</p>
+        <p>Current working directory: ${process.cwd()}</p>
+        <p>Server directory: ${__dirname}</p>
+        <p><a href="/api/admin/inspect">Try the admin route instead</a></p>
+      `);
+    }
+  });
+
+  // Debug route to see file locations
+  app.get('/debug-file-locations', (req, res) => {
+    const debugInfo = {
+      currentWorkingDirectory: process.cwd(),
+      serverDirectory: __dirname,
+      possiblePaths: [
+        path.join(__dirname, '../database-inspection.html'),
+        path.join(__dirname, '../../database-inspection.html'),
+        path.join(__dirname, '../client/public/database-inspection.html'),
+        path.join(__dirname, '../public/database-inspection.html'),
+        path.join(process.cwd(), 'database-inspection.html'),
+        path.join(process.cwd(), 'client/public/database-inspection.html')
+      ],
+      fileExists: {} as Record<string, boolean>
+    };
+    
+    debugInfo.possiblePaths.forEach(p => {
+      debugInfo.fileExists[p] = fs.existsSync(p);
+    });
+    
+    res.json(debugInfo);
   });
 
   const httpServer = createServer(app);

@@ -16,6 +16,7 @@
     "deploy:admin": "node deploy-admin-migration.js",
     "deploy:admin:dry-run": "node deploy-admin-migration.js --dry-run",
     "deploy:admin:verify": "node deploy-admin-migration.js --verify",
+    "check:admin": "node check-admin-tables.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

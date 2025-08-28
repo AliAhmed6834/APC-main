@@ -2324,6 +2324,13 @@ app.get('/api/admin/bookings', async (req, res) => {
     }
   });
 
+  // Import and register admin routes
+  import('./routes/admin').then(adminRouter => {
+    app.use('/api/admin', adminRouter.default);
+  }).catch(error => {
+    console.error('Failed to load admin routes:', error);
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

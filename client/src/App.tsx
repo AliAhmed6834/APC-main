@@ -3,6 +3,7 @@ import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocaleProvider } from "@/contexts/LocaleContext";
+import { SupplierAuthProvider } from "@/contexts/SupplierAuthContext";
 import Landing from "@/pages/Landing";
 import SearchResults from "@/pages/SearchResults";
 import About from "@/pages/About";
@@ -18,6 +19,8 @@ import Home from "@/pages/Home";
 import NotFound from "@/pages/not-found";
 import ComplianceBanner from "@/components/ComplianceBanner";
 import ManageBooking from "@/pages/ManageBooking";
+import SupplierLogin from "@/pages/SupplierLogin";
+import SupplierDashboard from "@/pages/SupplierDashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +47,11 @@ function Router() {
       <Route path="/booking/:lotId" component={BookingFlow} />
       <Route path="/home" component={Home} />
       <Route path="/manage-booking" component={ManageBooking} />
+      
+      {/* Supplier Routes */}
+      <Route path="/supplier/login" component={SupplierLogin} />
+      <Route path="/supplier/dashboard" component={SupplierDashboard} />
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -53,11 +61,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-          <ComplianceBanner />
-        </TooltipProvider>
+        <SupplierAuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+            <ComplianceBanner />
+          </TooltipProvider>
+        </SupplierAuthProvider>
       </LocaleProvider>
     </QueryClientProvider>
   );

@@ -5,6 +5,8 @@ import {
   parkingPricing,
   bookings,
   reviews,
+  supplierUsers,
+  supplierSessions,
   type User,
   type UpsertUser,
   type Airport,
@@ -51,6 +53,24 @@ export interface IStorage {
   createReview(review: InsertReview): Promise<Review>;
   getLotReviews(lotId: string): Promise<Review[]>;
   getUserReviews(userId: string): Promise<Review[]>;
+  
+  // Supplier operations
+  getSupplierUserByEmail(email: string): Promise<any | undefined>;
+  createSupplierUser(userData: any): Promise<any>;
+  createSupplierSession(sessionData: any): Promise<any>;
+  getSupplierSession(sessionToken: string): Promise<any | undefined>;
+  deleteSupplierSession(sessionToken: string): Promise<void>;
+  updateSupplierUser(userId: string, data: any): Promise<any>;
+  
+  // Parking lot operations for suppliers
+  getSupplierParkingLots(supplierId: string): Promise<any[]>;
+  createSupplierParkingLot(lotData: any): Promise<any>;
+  updateSupplierParkingLot(id: string, lotData: any): Promise<any>;
+  deleteSupplierParkingLot(id: string): Promise<void>;
+  getSupplierParkingLot(id: string): Promise<any | undefined>;
+  
+  // Airport operations
+  getAirports(): Promise<any[]>;
 }
 
 // Mock data for development
@@ -535,6 +555,150 @@ export class MockStorage implements IStorage {
   async getUserReviews(userId: string): Promise<Review[]> {
     return [];
   }
+
+  // Supplier operations
+  private static mockSupplierUsers: any[] = [];
+  private static mockSupplierSessions: any[] = [];
+
+  // Method to clear mock storage for testing
+  static clearMockStorage() {
+    MockStorage.mockSupplierUsers = [];
+    MockStorage.mockSupplierSessions = [];
+    console.log('Mock storage cleared');
+  }
+
+  async getSupplierUserByEmail(email: string): Promise<any | undefined> {
+    return MockStorage.mockSupplierUsers.find((user: any) => user.email === email);
+  }
+
+  async createSupplierUser(userData: any): Promise<any> {
+    const user = {
+      id: `supplier_user_${Date.now()}`,
+      ...userData,
+      isActive: userData.isActive !== undefined ? userData.isActive : true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    MockStorage.mockSupplierUsers.push(user);
+    console.log('Created supplier user:', user.email);
+    console.log('User data:', { ...user, password: '[HIDDEN]' });
+    console.log('Total users in mock storage:', MockStorage.mockSupplierUsers.length);
+    return user;
+  }
+
+  async createSupplierSession(sessionData: any): Promise<any> {
+    const session = {
+      id: `session_${Date.now()}`,
+      ...sessionData,
+      createdAt: new Date(),
+    };
+    MockStorage.mockSupplierSessions.push(session);
+    return session;
+  }
+
+  async getSupplierSession(sessionToken: string): Promise<any | undefined> {
+    return MockStorage.mockSupplierSessions.find((session: any) => session.sessionToken === sessionToken);
+  }
+
+  async deleteSupplierSession(sessionToken: string): Promise<void> {
+    const index = MockStorage.mockSupplierSessions.findIndex((session: any) => session.sessionToken === sessionToken);
+    if (index > -1) {
+      MockStorage.mockSupplierSessions.splice(index, 1);
+    }
+  }
+
+  async updateSupplierUser(userId: string, data: any): Promise<any> {
+    const index = MockStorage.mockSupplierUsers.findIndex((user: any) => user.id === userId);
+    if (index > -1) {
+      MockStorage.mockSupplierUsers[index] = { ...MockStorage.mockSupplierUsers[index], ...data, updatedAt: new Date() };
+      return MockStorage.mockSupplierUsers[index];
+    }
+    return null;
+  }
+
+  // Parking lot operations for suppliers
+  private static mockParkingLots: any[] = [];
+  private static mockAirports: any[] = [
+    {
+      id: 'airport_1',
+      code: 'LAX',
+      name: 'Los Angeles International Airport',
+      city: 'Los Angeles',
+      country: 'United States',
+      countryCode: 'US',
+      timezone: 'America/Los_Angeles',
+      latitude: 33.9416,
+      longitude: -118.4085,
+      createdAt: new Date(),
+    },
+    {
+      id: 'airport_2',
+      code: 'JFK',
+      name: 'John F. Kennedy International Airport',
+      city: 'New York',
+      country: 'United States',
+      countryCode: 'US',
+      timezone: 'America/New_York',
+      latitude: 40.6413,
+      longitude: -73.7781,
+      createdAt: new Date(),
+    },
+    {
+      id: 'airport_3',
+      code: 'LHR',
+      name: 'London Heathrow Airport',
+      city: 'London',
+      country: 'United Kingdom',
+      countryCode: 'GB',
+      timezone: 'Europe/London',
+      latitude: 51.4700,
+      longitude: -0.4543,
+      createdAt: new Date(),
+    },
+  ];
+
+  async getSupplierParkingLots(supplierId: string): Promise<any[]> {
+    return MockStorage.mockParkingLots.filter((lot: any) => lot.supplierId === supplierId);
+  }
+
+  async createSupplierParkingLot(lotData: any): Promise<any> {
+    const lot = {
+      id: `parking_lot_${Date.now()}`,
+      ...lotData,
+      rating: null,
+      reviewCount: 0,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    MockStorage.mockParkingLots.push(lot);
+    console.log('Created parking lot:', lot.name);
+    return lot;
+  }
+
+  async updateSupplierParkingLot(id: string, lotData: any): Promise<any> {
+    const index = MockStorage.mockParkingLots.findIndex((lot: any) => lot.id === id);
+    if (index > -1) {
+      MockStorage.mockParkingLots[index] = { 
+        ...MockStorage.mockParkingLots[index], 
+        ...lotData, 
+        updatedAt: new Date() 
+      };
+      return MockStorage.mockParkingLots[index];
+    }
+    return null;
+  }
+
+  async deleteSupplierParkingLot(id: string): Promise<void> {
+    const index = MockStorage.mockParkingLots.findIndex((lot: any) => lot.id === id);
+    if (index > -1) {
+      MockStorage.mockParkingLots.splice(index, 1);
+    }
+  }
+
+  async getSupplierParkingLot(id: string): Promise<any | undefined> {
+    return MockStorage.mockParkingLots.find((lot: any) => lot.id === id);
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -777,6 +941,97 @@ export class DatabaseStorage implements IStorage {
       .from(reviews)
       .where(eq(reviews.userId, userId))
       .orderBy(desc(reviews.createdAt));
+  }
+
+  // Supplier operations
+  async getSupplierUserByEmail(email: string): Promise<any | undefined> {
+    const [user] = await db
+      .select()
+      .from(supplierUsers)
+      .where(eq(supplierUsers.email, email))
+      .limit(1);
+    return user;
+  }
+
+  // Parking lot operations for suppliers
+  async getSupplierParkingLots(supplierId: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(parkingLots)
+      .where(eq(parkingLots.supplierId, supplierId))
+      .orderBy(desc(parkingLots.createdAt));
+  }
+
+  async createSupplierParkingLot(lotData: any): Promise<any> {
+    const [lot] = await db
+      .insert(parkingLots)
+      .values(lotData)
+      .returning();
+    return lot;
+  }
+
+  async updateSupplierParkingLot(id: string, lotData: any): Promise<any> {
+    const [lot] = await db
+      .update(parkingLots)
+      .set({ ...lotData, updatedAt: new Date() })
+      .where(eq(parkingLots.id, id))
+      .returning();
+    return lot;
+  }
+
+  async deleteSupplierParkingLot(id: string): Promise<void> {
+    await db
+      .delete(parkingLots)
+      .where(eq(parkingLots.id, id));
+  }
+
+  async getSupplierParkingLot(id: string): Promise<any | undefined> {
+    const [lot] = await db
+      .select()
+      .from(parkingLots)
+      .where(eq(parkingLots.id, id))
+      .limit(1);
+    return lot;
+  }
+
+  async createSupplierUser(userData: any): Promise<any> {
+    const [user] = await db
+      .insert(supplierUsers)
+      .values(userData)
+      .returning();
+    return user;
+  }
+
+  async createSupplierSession(sessionData: any): Promise<any> {
+    const [session] = await db
+      .insert(supplierSessions)
+      .values(sessionData)
+      .returning();
+    return session;
+  }
+
+  async getSupplierSession(sessionToken: string): Promise<any | undefined> {
+    const [session] = await db
+      .select()
+      .from(supplierSessions)
+      .where(eq(supplierSessions.sessionToken, sessionToken))
+      .limit(1);
+    return session;
+  }
+
+  async deleteSupplierSession(sessionToken: string): Promise<void> {
+    await db
+      .delete(supplierSessions)
+      .where(eq(supplierSessions.sessionToken, sessionToken));
+  }
+
+  async updateSupplierUser(userId: string, data: any): Promise<any> {
+    const [user] = await db
+      .update(supplierUsers)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(supplierUsers.id, userId))
+      .returning();
+    return user;
   }
 }
 

@@ -7,6 +7,7 @@ import { geoDetectionMiddleware, localeOverrideMiddleware } from "./middleware/g
 import { CurrencyService } from "./services/currencyService";
 import { searchSchema, insertBookingSchema, insertReviewSchema } from "@shared/schema";
 import { zfd } from "zod-form-data";
+import { registerSupplierRoutes } from "./supplierRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Basic middleware
@@ -243,6 +244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch reviews" });
     }
   });
+
+  // Register supplier routes
+  registerSupplierRoutes(app);
 
   const httpServer = createServer(app);
   return httpServer;

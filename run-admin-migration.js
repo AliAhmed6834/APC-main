@@ -39,3 +39,4 @@ try {
   console.log('   • Proper environment variables set');
   process.exit(1);
 }
+

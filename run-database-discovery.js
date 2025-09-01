@@ -1,46 +1,13 @@
+// Simple script to discover all database tables
 import { Client } from 'pg';
 
-// Debug environment variables
-console.log('🔍 Environment Variables Debug:');
-console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('Available env vars:', Object.keys(process.env).filter(key => key.includes('DATABASE') || key.includes('DB') || key.includes('POSTGRES')));
-
-// Get database URL from environment variable directly
+// Get database URL from environment variable
 const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   console.error('❌ DATABASE_URL environment variable is not set');
-  console.log('\n🔧 Possible solutions:');
-  console.log('1. Check if your .env file exists');
-  console.log('2. Verify DATABASE_URL is set in your Render.com environment variables');
-  console.log('3. Check if the variable name is correct (should be DATABASE_URL)');
-  console.log('\n📋 Current working directory:', process.cwd());
-  console.log('📋 Files in current directory:', process.cwd());
-  
-  // Try to read .env file if it exists
-  try {
-    const fs = await import('fs');
-    const path = await import('path');
-    
-    const envPath = path.join(process.cwd(), '.env');
-    if (fs.existsSync(envPath)) {
-      console.log('✅ .env file found at:', envPath);
-      const envContent = fs.readFileSync(envPath, 'utf8');
-      console.log('📄 .env file contents:');
-      console.log(envContent);
-    } else {
-      console.log('❌ .env file not found at:', envPath);
-    }
-  } catch (error) {
-    console.log('⚠️ Could not check for .env file:', error.message);
-  }
-  
   process.exit(1);
 }
-
-console.log('\n🔌 Attempting to connect to database...');
-console.log('Connection string preview:', DATABASE_URL.substring(0, 20) + '...');
 
 const client = new Client({
   connectionString: DATABASE_URL,

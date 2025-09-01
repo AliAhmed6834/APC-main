@@ -248,3 +248,4 @@ COMMENT ON TABLE "admin_reports" IS 'Generated administrative reports and analyt
 -- Migration completed successfully
 -- This migration adds comprehensive support for the AdminDashboard functionality
 -- including admin user management, analytics tables, system settings, and audit logging
+

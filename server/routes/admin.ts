@@ -60,6 +60,100 @@ const isAdmin = (req: any, res: any, next: any) => {
 // Apply admin middleware to all routes
 router.use(isAdmin);
 
+// GET /api/admin/database/tables - Get all database tables with details
+router.get('/database/tables', async (req, res) => {
+  try {
+    // Get all tables in the public schema
+    const tablesQuery = `
+      SELECT 
+        schemaname,
+        tablename,
+        tableowner,
+        hasindexes,
+        hasrules,
+        hastriggers,
+        rowsecurity
+      FROM pg_tables 
+      WHERE schemaname = 'public'
+      ORDER BY tablename;
+    `;
+
+    const tablesResult = await db.execute(sql.raw(tablesQuery));
+    const tables = tablesResult.rows;
+    
+    // Get record counts and sizes for each table
+    const tablesWithDetails = [];
+    
+    for (const table of tables) {
+      try {
+        // Get record count
+        const countResult = await db.execute(sql.raw(`SELECT COUNT(*) as count FROM ${table.tablename}`));
+        const recordCount = parseInt(countResult.rows[0].count);
+
+        // Get table size
+        const sizeResult = await db.execute(sql.raw(`
+          SELECT pg_size_pretty(pg_total_relation_size('${table.tablename}')) as size
+        `));
+        const tableSize = sizeResult.rows[0].size;
+
+        // Categorize table type
+        let type = 'other';
+        if (['users', 'sessions', 'airports', 'parking_suppliers', 'parking_lots', 'parking_pricing', 'bookings', 'reviews', 'parking_slots', 'supplier_users', 'supplier_sessions', 'supplier_bookings', 'exchange_rates', 'locale_content', 'payment_methods', 'transactions', 'payment_gateway_configs', 'email_templates', 'email_logs', 'sms_logs', 'user_activity_logs', 'search_analytics', 'revenue_analytics', 'supplier_performance', 'user_preferences', 'user_loyalty', 'supplier_contracts', 'supplier_metrics', 'booking_status_history', 'saved_searches', 'search_filters'].includes(table.tablename)) {
+          type = 'core';
+        } else if (table.tablename.startsWith('admin_')) {
+          type = 'admin';
+        } else if (table.tablename.includes('analytics')) {
+          type = 'analytics';
+        }
+
+        tablesWithDetails.push({
+          name: table.tablename,
+          status: 'exists',
+          records: recordCount,
+          type: type,
+          size: tableSize,
+          hasIndexes: table.hasindexes,
+          hasTriggers: table.hastriggers,
+          hasRules: table.hasrules,
+          rowSecurity: table.rowsecurity
+        });
+      } catch (error) {
+        // If we can't get details for a table, still include it
+        tablesWithDetails.push({
+          name: table.tablename,
+          status: 'exists',
+          records: 0,
+          type: 'other',
+          size: 'Unknown',
+          hasIndexes: table.hasindexes,
+          hasTriggers: table.hastriggers,
+          hasRules: table.hasrules,
+          rowSecurity: table.rowsecurity,
+          error: error.message
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      tables: tablesWithDetails,
+      totalTables: tablesWithDetails.length,
+      coreTables: tablesWithDetails.filter(t => t.type === 'core').length,
+      adminTables: tablesWithDetails.filter(t => t.type === 'admin').length,
+      analyticsTables: tablesWithDetails.filter(t => t.type === 'analytics').length,
+      otherTables: tablesWithDetails.filter(t => t.type === 'other').length
+    });
+
+  } catch (error) {
+    console.error('Error fetching database tables:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch database tables',
+      message: error.message
+    });
+  }
+});
+
 // GET /api/admin/airports - Get all airports with admin data
 router.get('/airports', async (req, res) => {
   try {

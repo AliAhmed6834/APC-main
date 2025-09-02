@@ -706,4 +706,106 @@ router.put('/airports/:id', async (req, res) => {
   }
 });
 
+// GET /api/admin/analytics - Get analytics data
+router.get('/analytics', async (req, res) => {
+  try {
+    // Get basic analytics data
+    const totalUsers = await db.execute(sql`SELECT COUNT(*) as count FROM users`);
+    const totalBookings = await db.execute(sql`SELECT COUNT(*) as count FROM bookings`);
+    const totalSuppliers = await db.execute(sql`SELECT COUNT(*) as count FROM parking_suppliers`);
+    const totalAirports = await db.execute(sql`SELECT COUNT(*) as count FROM airports`);
+
+    const analytics = {
+      totalUsers: parseInt(totalUsers.rows[0].count),
+      totalBookings: parseInt(totalBookings.rows[0].count),
+      totalSuppliers: parseInt(totalSuppliers.rows[0].count),
+      totalAirports: parseInt(totalAirports.rows[0].count),
+      revenue: {
+        total: 0,
+        monthly: 0,
+        growth: 0
+      },
+      bookings: {
+        total: parseInt(totalBookings.rows[0].count),
+        pending: 0,
+        completed: 0,
+        cancelled: 0
+      }
+    };
+
+    res.json(analytics);
+  } catch (error) {
+    console.error('Error fetching analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch analytics',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/admin/customers - Get customers data (alias for users)
+router.get('/customers', async (req, res) => {
+  try {
+    const { status, limit = 50, offset = 0 } = req.query;
+
+    let query = db
+      .select({
+        id: users.id,
+        email: users.email,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        preferredLocale: users.preferredLocale,
+        preferredCurrency: users.preferredCurrency,
+        detectedCountry: users.detectedCountry,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt
+      })
+      .from(users)
+      .limit(parseInt(limit as string))
+      .offset(parseInt(offset as string))
+      .orderBy(desc(users.createdAt));
+
+    const customers = await query;
+
+    res.json(customers);
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch customers',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// GET /api/admin/payments - Get payments data
+router.get('/payments', async (req, res) => {
+  try {
+    // Get payment data from transactions table
+    const payments = await db.execute(sql`
+      SELECT 
+        t.id,
+        t.amount,
+        t.currency,
+        t.status,
+        t.payment_method,
+        t.created_at,
+        b.id as booking_id,
+        u.email as user_email
+      FROM transactions t
+      LEFT JOIN bookings b ON t.booking_id = b.id
+      LEFT JOIN users u ON b.user_id = u.id
+      ORDER BY t.created_at DESC
+      LIMIT 50
+    `);
+
+    res.json(payments.rows);
+  } catch (error) {
+    console.error('Error fetching payments:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch payments',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

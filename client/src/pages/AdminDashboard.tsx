@@ -41,6 +41,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+const API_BASE_URL = 'http://localhost:5000';
+
 interface AdminUser {
   id: string;
   email: string;
@@ -159,7 +161,7 @@ export default function AdminDashboard() {
     const fetchConfig = async () => {
       setGatewayLoading(true);
       try {
-        const res = await fetch(`/api/admin/gateway/${gatewayType}`);
+        const res = await fetch(`${API_BASE_URL}/api/admin/gateway/${gatewayType}`);
         if (res.ok) {
           const config = await res.json();
           setGatewayEnabled(!!config.isActive);
@@ -191,7 +193,7 @@ export default function AdminDashboard() {
     setGatewayLoading(true);
     try {
       // Check if config exists
-      const res = await fetch(`/api/admin/gateway/${gatewayType}`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/gateway/${gatewayType}`);
       const exists = res.ok;
       const payload = {
         gatewayName: gatewayType,
@@ -203,13 +205,13 @@ export default function AdminDashboard() {
       };
       let saveRes;
       if (exists) {
-        saveRes = await fetch(`/api/admin/gateway/${gatewayType}`, {
+        saveRes = await fetch(`${API_BASE_URL}/api/admin/gateway/${gatewayType}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
       } else {
-        saveRes = await fetch(`/api/admin/gateway`, {
+        saveRes = await fetch(`${API_BASE_URL}/api/admin/gateway`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -253,12 +255,12 @@ export default function AdminDashboard() {
       
       // Load all data in parallel
       const [analyticsData, customersData, suppliersData, airportsData, paymentsData, bookingsData] = await Promise.all([
-        fetch('/api/admin/analytics').then(res => res.json()),
-        fetch('/api/admin/customers').then(res => res.json()),
-        fetch('/api/admin/suppliers').then(res => res.json()),
-        fetch('/api/admin/airports').then(res => res.json()),
-        fetch('/api/admin/payments').then(res => res.json()),
-        fetch('/api/admin/bookings').then(res => res.json())
+        fetch(`${API_BASE_URL}/api/admin/analytics`).then(res => res.json()),
+        fetch(`${API_BASE_URL}/api/admin/customers`).then(res => res.json()),
+        fetch(`${API_BASE_URL}/api/admin/suppliers`).then(res => res.json()),
+        fetch(`${API_BASE_URL}/api/admin/airports`).then(res => res.json()),
+        fetch(`${API_BASE_URL}/api/admin/payments`).then(res => res.json()),
+        fetch(`${API_BASE_URL}/api/admin/bookings`).then(res => res.json())
       ]);
 
       setAnalytics(analyticsData);
@@ -310,7 +312,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id: string, type: 'customer' | 'supplier' | 'airport' | 'payment' | 'booking') => {
     if (confirm(`Are you sure you want to delete this ${type}?`)) {
       try {
-        const response = await fetch(`/api/admin/${type}s/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/admin/${type}s/${id}`, {
           method: 'DELETE',
         });
         

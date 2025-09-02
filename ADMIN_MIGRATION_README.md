@@ -229,3 +229,4 @@ After applying this migration:
 4. Configure system settings for your environment
 5. Set up admin user accounts for your team
 
+

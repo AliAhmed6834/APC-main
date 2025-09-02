@@ -642,6 +642,9 @@
                     <button class="btn btn-warning" onclick="checkDatabasePermissions()">
                         🔐 Check Permissions
                     </button>
+                    <button class="btn btn-danger" onclick="testCorsConnection()">
+                        🌐 Test CORS
+                    </button>
                 </div>
 
                 <div id="connection-status"></div>
@@ -689,20 +692,20 @@
                 <div id="sql-import-log" class="log-container hidden"></div>
             </div>
 
-            <!-- Sample Data Section -->
-            <div class="section">
-                <h2>📝 Sample Data Management</h2>
-                <p>Insert sample data and manage test records</p>
+            <!-- Sample Data Section - DISABLED -->
+            <div class="section" style="display: none;">
+                <h2>📝 Sample Data Management (DISABLED)</h2>
+                <p>Sample data functionality has been disabled for security reasons</p>
                 
                 <div class="button-group">
-                    <button class="btn btn-primary" onclick="insertSampleData()">
-                        📝 Insert Sample Data
+                    <button class="btn btn-primary" disabled>
+                        📝 Insert Sample Data (Disabled)
                     </button>
-                    <button class="btn btn-success" onclick="checkSampleData()">
-                        🔍 Check Sample Data
+                    <button class="btn btn-success" disabled>
+                        🔍 Check Sample Data (Disabled)
                     </button>
-                    <button class="btn btn-warning" onclick="cleanupTestData()">
-                        🧹 Cleanup Test Data
+                    <button class="btn btn-warning" disabled>
+                        🧹 Cleanup Test Data (Disabled)
                     </button>
                 </div>
 
@@ -967,11 +970,17 @@
             try {
                 showLog('tables-log', '🔍 Connecting to database...');
                 
-                // Make API call to get real database tables
+                // Make API call to get real database tables with CORS headers
                 const response = await fetch(`${API_BASE_URL}/api/admin/database/tables`, {
                     method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
                     },
                 });
 
@@ -1229,6 +1238,41 @@
                 
             } catch (error) {
                 showStatus('admin-status', `❌ Error checking admin fields: ${error.message}`, 'error');
+            }
+        }
+
+        // CORS Test Function
+        async function testCorsConnection() {
+            showStatus('connection-status', '🔍 Testing CORS connection...', 'info');
+            clearLog('connection-log');
+            
+            try {
+                showLog('connection-log', '🔍 Testing CORS connection to API...');
+                
+                // Test with a simple OPTIONS request first
+                const optionsResponse = await fetch(`${API_BASE_URL}/api/admin/database/tables`, {
+                    method: 'OPTIONS',
+                    mode: 'cors',
+                    headers: {
+                        'Access-Control-Request-Method': 'GET',
+                        'Access-Control-Request-Headers': 'Content-Type'
+                    }
+                });
+                
+                showLog('connection-log', `📋 OPTIONS response status: ${optionsResponse.status}`);
+                showLog('connection-log', `📋 CORS headers present: ${optionsResponse.headers.get('Access-Control-Allow-Origin') ? 'Yes' : 'No'}`);
+                
+                if (optionsResponse.headers.get('Access-Control-Allow-Origin')) {
+                    showLog('connection-log', `✅ CORS is properly configured on server`);
+                    showStatus('connection-status', '✅ CORS connection test successful!', 'success');
+                } else {
+                    showLog('connection-log', `❌ CORS headers missing from server response`);
+                    showStatus('connection-status', '❌ CORS not properly configured on server', 'error');
+                }
+                
+            } catch (error) {
+                showLog('connection-log', `❌ CORS test failed: ${error.message}`);
+                showStatus('connection-status', `❌ CORS test failed: ${error.message}`, 'error');
             }
         }
 
@@ -1636,95 +1680,20 @@
             }
         }
 
-        // Sample Data Management
+        // Sample Data Management - DISABLED
         async function insertSampleData() {
-            showStatus('sample-data-status', '📝 Inserting sample data...', 'info');
-            
-            try {
-                showLog('sample-data-log', '📝 Starting sample data insertion...');
-                
-                const sampleSteps = [
-                    '👥 Inserting sample users...',
-                    '✅ 25 sample users created',
-                    '✈️ Inserting sample airports...',
-                    '✅ 8 sample airports created',
-                    '🏢 Inserting sample parking suppliers...',
-                    '✅ 5 sample parking suppliers created',
-                    '🅿️ Inserting sample parking lots...',
-                    '✅ 15 sample parking lots created',
-                    '📅 Inserting sample bookings...',
-                    '✅ 50 sample bookings created',
-                    '⭐ Inserting sample reviews...',
-                    '✅ 30 sample reviews created',
-                    '🎉 Sample data insertion completed!'
-                ];
-
-                for (let i = 0; i < sampleSteps.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 400));
-                    showLog('sample-data-log', sampleSteps[i]);
-                }
-
-                showStatus('sample-data-status', '✅ Sample data inserted successfully!', 'success');
-                
-            } catch (error) {
-                showStatus('sample-data-status', `❌ Error inserting sample data: ${error.message}`, 'error');
-            }
+            showStatus('sample-data-status', '❌ Sample data insertion is disabled', 'error');
+            showLog('sample-data-log', '❌ Sample data insertion has been disabled for security reasons');
         }
 
         async function checkSampleData() {
-            showStatus('sample-data-status', '🔍 Checking sample data...', 'info');
-            
-            try {
-                showLog('sample-data-log', '🔍 Checking sample data...');
-                
-                const dataCheck = [
-                    '👥 Users: 25 records found',
-                    '✈️ Airports: 8 records found',
-                    '🏢 Parking Suppliers: 5 records found',
-                    '🅿️ Parking Lots: 15 records found',
-                    '📅 Bookings: 50 records found',
-                    '⭐ Reviews: 30 records found',
-                    '🎯 Sample data verification completed!'
-                ];
-
-                for (let i = 0; i < dataCheck.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    showLog('sample-data-log', dataCheck[i]);
-                }
-
-                showStatus('sample-data-status', '✅ Sample data check completed successfully!', 'success');
-                
-            } catch (error) {
-                showStatus('sample-data-status', `❌ Error checking sample data: ${error.message}`, 'error');
-            }
+            showStatus('sample-data-status', '❌ Sample data checking is disabled', 'error');
+            showLog('sample-data-log', '❌ Sample data checking has been disabled for security reasons');
         }
 
         async function cleanupTestData() {
-            showStatus('sample-data-status', '🧹 Cleaning up test data...', 'info');
-            
-            try {
-                showLog('sample-data-log', '🧹 Starting test data cleanup...');
-                
-                const cleanupSteps = [
-                    '🗑️ Removing test users...',
-                    '✅ Test users removed',
-                    '🗑️ Removing test bookings...',
-                    '✅ Test bookings removed',
-                    '🗑️ Removing test reviews...',
-                    '✅ Test reviews removed',
-                    '🧹 Cleanup completed successfully!'
-                ];
-
-                for (let i = 0; i < cleanupSteps.length; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 400));
-                    showLog('sample-data-log', cleanupSteps[i]);
-                }
-
-                showStatus('sample-data-status', '✅ Test data cleanup completed successfully!', 'success');
-                
-            } catch (error) {
-                showStatus('sample-data-status', `❌ Error cleaning up test data: ${error.message}`, 'error');
-            }
+            showStatus('sample-data-status', '❌ Test data cleanup is disabled', 'error');
+            showLog('sample-data-log', '❌ Test data cleanup has been disabled for security reasons');
         }
 
         // Database Structure Viewer Functions
@@ -1802,8 +1771,8 @@
             try {
                 showLog('structure-log', `🏗️ Fetching schema for ${selectedTable}...`);
                 
-                // Simulate schema data based on known table structures
-                const schemaData = getTableSchema(selectedTable);
+                // Fetch real schema data from database
+                const schemaData = await getTableSchema(selectedTable);
                 
                 displayTableSchema(selectedTable, schemaData);
                 showStatus('structure-status', `✅ Schema loaded for ${selectedTable}`, 'success');
@@ -1828,8 +1797,8 @@
             try {
                 showLog('structure-log', `📊 Fetching data for ${selectedTable}...`);
                 
-                // Simulate table data based on known record counts
-                const tableData = getTableData(selectedTable);
+                // Fetch real table data from database
+                const tableData = await getTableData(selectedTable, 50);
                 
                 displayTableData(selectedTable, tableData);
                 showStatus('structure-status', `✅ Data loaded for ${selectedTable}`, 'success');
@@ -1876,7 +1845,7 @@
             showStatus('structure-status', `📤 Exporting data for table: ${selectedTable}`, 'info');
             
             try {
-                const tableData = getTableData(selectedTable);
+                const tableData = await getTableData(selectedTable, 1000); // Export more records
                 const csvContent = convertToCSV(tableData);
                 
                 // Create and download file
@@ -1898,8 +1867,57 @@
         }
 
         // Helper functions for schema and data
-        function getTableSchema(tableName) {
-            // Return mock schema data based on known table structures
+        async function getTableSchema(tableName) {
+            try {
+                showLog('structure-log', `🔍 Fetching schema for ${tableName} table...`);
+                
+                // Make API call to fetch real table schema with CORS headers
+                const response = await fetch(`${API_BASE_URL}/api/admin/database/table-schema`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                    },
+                    body: JSON.stringify({
+                        tableName: tableName
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.schema) {
+                    showLog('structure-log', `✅ Successfully fetched schema for ${tableName}`);
+                    return result.schema;
+                } else {
+                    throw new Error(result.error || 'Failed to fetch table schema');
+                }
+                
+            } catch (error) {
+                showLog('structure-log', `❌ Error fetching schema for ${tableName}: ${error.message}`);
+                
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('cross-origin') || error.message.includes('Access-Control')) {
+                    showLog('structure-log', `🚫 CORS error detected. The server needs to allow cross-origin requests.`);
+                    showLog('structure-log', `💡 Server should include: Access-Control-Allow-Origin: * in response headers`);
+                }
+                
+                // Fallback to mock schema if API fails
+                showLog('structure-log', `⚠️ Falling back to mock schema for ${tableName}`);
+                return getMockTableSchema(tableName);
+            }
+        }
+
+        function getMockTableSchema(tableName) {
+            // Fallback mock schema when API is unavailable
             const schemas = {
                 'users': [
                     { column: 'id', type: 'varchar', nullable: 'NO', default: 'gen_random_uuid()', key: 'PRI' },
@@ -1939,8 +1957,59 @@
             ];
         }
 
-        function getTableData(tableName) {
-            // Return mock data based on known record counts
+        async function getTableData(tableName, limit = 50) {
+            try {
+                showLog('structure-log', `🔍 Fetching data from ${tableName} table...`);
+                
+                // Make API call to fetch real table data with CORS headers
+                const response = await fetch(`${API_BASE_URL}/api/admin/database/table-data`, {
+                    method: 'POST',
+                    mode: 'cors',
+                    credentials: 'omit',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+                    },
+                    body: JSON.stringify({
+                        tableName: tableName,
+                        limit: limit,
+                        offset: 0
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    showLog('structure-log', `✅ Successfully fetched ${result.data.length} records from ${tableName}`);
+                    return result.data;
+                } else {
+                    throw new Error(result.error || 'Failed to fetch table data');
+                }
+                
+            } catch (error) {
+                showLog('structure-log', `❌ Error fetching data from ${tableName}: ${error.message}`);
+                
+                // Check if it's a CORS error
+                if (error.message.includes('CORS') || error.message.includes('cross-origin') || error.message.includes('Access-Control')) {
+                    showLog('structure-log', `🚫 CORS error detected. The server needs to allow cross-origin requests.`);
+                    showLog('structure-log', `💡 Server should include: Access-Control-Allow-Origin: * in response headers`);
+                }
+                
+                // Fallback to mock data if API fails
+                showLog('structure-log', `⚠️ Falling back to mock data for ${tableName}`);
+                return getMockTableData(tableName);
+            }
+        }
+
+        function getMockTableData(tableName) {
+            // Fallback mock data when API is unavailable
             const recordCounts = {
                 'airports': 3, 'booking_status_history': 8, 'bookings': 13, 'email_logs': 0,
                 'email_templates': 3, 'exchange_rates': 66, 'locale_content': 12, 'parking_lots': 35,

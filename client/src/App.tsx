@@ -31,6 +31,7 @@ import SupplierLogin from "@/pages/SupplierLogin";
 import SupplierDashboard from "@/pages/SupplierDashboard";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
+import DatabaseInspection from "@/pages/DatabaseInspection";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +75,7 @@ function Router() {
       {/* Admin Routes */}
       <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={AdminDashboard} />
+      <Route path="/admin/database" component={DatabaseInspection} />
       
       <Route component={NotFound} />
     </Switch>

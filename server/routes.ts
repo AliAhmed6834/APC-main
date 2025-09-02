@@ -27,14 +27,6 @@ import {
   verifyPassword,
   type SupplierAuthRequest 
 } from "./middleware/supplierAuth";
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-// Get __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 // Helper function to check if a date is a holiday (basic implementation)
 function isHoliday(date: Date): boolean {
@@ -2253,7 +2245,7 @@ app.get('/api/admin/bookings', async (req, res) => {
       .orderBy(desc(bookings.createdAt));
     
     // Format the data for the frontend
-    const formattedBookings = bookingsData.map(booking => ({
+    const formattedBookings = bookingsData.map((booking: any) => ({
       id: booking.id,
       startDate: booking.startDate,
       endDate: booking.endDate,
@@ -2333,134 +2325,13 @@ app.get('/api/admin/bookings', async (req, res) => {
   });
 
   // Import and register admin routes
-  import('./routes/admin').then(adminRouter => {
+  try {
+    const adminRouter = await import('./routes/admin');
     app.use('/api/admin', adminRouter.default);
-  }).catch(error => {
-    console.error('Failed to load admin routes:', error);
-  });
-
-  // Serve database inspection page
-  app.get('/database-inspection.html', (req, res) => {
-    // Try multiple possible locations
-    const possiblePaths = [
-      path.join(__dirname, '../database-inspection.html'),           // ../database-inspection.html
-      path.join(__dirname, '../../database-inspection.html'),        // ../../database-inspection.html
-      path.join(__dirname, '../client/public/database-inspection.html'), // ../client/public/database-inspection.html
-      path.join(__dirname, '../public/database-inspection.html'),    // ../public/database-inspection.html
-      path.join(process.cwd(), 'database-inspection.html'),         // Current working directory
-      path.join(process.cwd(), 'client/public/database-inspection.html'), // Client public directory
-      path.join(process.cwd(), 'public/database-inspection.html'),   // public/database-inspection.html
-      path.join(process.cwd(), 'src/database-inspection.html'),     // src/database-inspection.html
-      path.join(process.cwd(), 'server/database-inspection.html')   // server/database-inspection.html
-    ];
-    
-    console.log('Looking for database-inspection.html in possible paths:');
-    possiblePaths.forEach((p, i) => console.log(`${i + 1}. ${p}`));
-    
-    // Find the first existing path
-    const existingPath = possiblePaths.find(p => {
-      try {
-        return fs.existsSync(p);
-      } catch (error) {
-        console.error(`Error checking path ${p}:`, error);
-        return false;
-      }
-    });
-    
-    if (existingPath) {
-      console.log('Found file at:', existingPath);
-      res.sendFile(existingPath);
-    } else {
-      console.error('File not found in any of the possible paths');
-      res.status(404).send(`
-        <h1>Database Inspection Page Not Found</h1>
-        <p>The file database-inspection.html could not be found in any of these locations:</p>
-        <ul>
-          ${possiblePaths.map(p => `<li>${p}</li>`).join('')}
-        </ul>
-        <p>Please ensure the file exists in one of these locations.</p>
-        <p>Current working directory: ${process.cwd()}</p>
-        <p>Server directory: ${__dirname}</p>
-        <p><a href="/api/admin/inspect">Try the admin route instead</a></p>
-        <p><a href="/debug-file-locations">Debug file locations</a></p>
-      `);
-    }
-  });
-
-  // Debug route to see file locations
-  app.get('/debug-file-locations', (req, res) => {
-    const debugInfo = {
-      currentWorkingDirectory: process.cwd(),
-      serverDirectory: __dirname,
-      possiblePaths: [
-        path.join(__dirname, '../database-inspection.html'),
-        path.join(__dirname, '../../database-inspection.html'),
-        path.join(__dirname, '../client/public/database-inspection.html'),
-        path.join(__dirname, '../public/database-inspection.html'),
-        path.join(process.cwd(), 'database-inspection.html'),
-        path.join(process.cwd(), 'client/public/database-inspection.html'),
-        path.join(process.cwd(), 'public/database-inspection.html'),
-        path.join(process.cwd(), 'src/database-inspection.html'),
-        path.join(process.cwd(), 'server/database-inspection.html')
-      ],
-      fileExists: {} as Record<string, boolean>
-    };
-    
-    debugInfo.possiblePaths.forEach(p => {
-      try {
-        debugInfo.fileExists[p] = fs.existsSync(p);
-      } catch (error) {
-        debugInfo.fileExists[p] = false;
-      }
-    });
-    
-    res.json(debugInfo);
-  });
-
-  // Fallback route - serve the file content directly
-  app.get('/database-inspection-fallback', (req, res) => {
-    res.setHeader('Content-Type', 'text/html');
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Database Inspection - Fallback</title>
-          <style>
-              body { font-family: Arial, sans-serif; margin: 40px; }
-              .container { max-width: 800px; margin: 0 auto; }
-              .btn { display: inline-block; padding: 10px 20px; margin: 10px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-              .btn:hover { background: #0056b3; }
-          </style>
-      </head>
-      <body>
-          <div class="container">
-              <h1>🗄️ Database Inspection - Fallback Page</h1>
-              <p>This is a fallback page while we resolve the file location issue.</p>
-              
-              <h2>🔍 Try These URLs:</h2>
-              <ul>
-                  <li><a href="/api/admin/inspect" class="btn">Admin Route</a> - Should work if file exists</li>
-                  <li><a href="/debug-file-locations" class="btn">Debug File Locations</a> - See where server is looking</li>
-                  <li><a href="/database-inspection.html" class="btn">Direct Route</a> - Enhanced file search</li>
-              </ul>
-              
-              <h2>📁 File Location Help:</h2>
-              <p>Make sure <code>database-inspection.html</code> is in one of these locations:</p>
-              <ul>
-                  <li><code>${process.cwd()}/database-inspection.html</code> (root directory)</li>
-                  <li><code>${process.cwd()}/client/public/database-inspection.html</code> (client public)</li>
-                  <li><code>${process.cwd()}/public/database-inspection.html</code> (public directory)</li>
-              </ul>
-              
-              <h2>🚀 Quick Fix:</h2>
-              <p>Upload <code>database-inspection.html</code> to your project root directory and restart the server.</p>
-          </div>
-      </body>
-      </html>
-    `);
-  });
+    console.log('✅ Admin routes registered successfully');
+  } catch (error) {
+    console.error('❌ Failed to load admin routes:', error);
+  }
 
   const httpServer = createServer(app);
   return httpServer;

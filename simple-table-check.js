@@ -73,3 +73,4 @@ console.log('- Verify DATABASE_URL is set correctly');
 console.log('- Restart your server after setting environment variables');
 console.log('- Use the web interface to inspect your database');
 
+

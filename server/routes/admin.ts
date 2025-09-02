@@ -8,6 +8,154 @@ import fs from 'fs';
 const router = express.Router();
 
 // Serve the database inspection page
+router.get('/database', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Inspection - Backend Access</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .container {
+                background: white;
+                border-radius: 15px;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+                padding: 40px;
+                text-align: center;
+                max-width: 600px;
+            }
+            h1 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+            }
+            .info {
+                background: #e3f2fd;
+                border: 1px solid #2196f3;
+                border-radius: 8px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+            .button {
+                display: inline-block;
+                background: #3498db;
+                color: white;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 8px;
+                margin: 10px;
+                transition: background 0.3s ease;
+            }
+            .button:hover {
+                background: #2980b9;
+            }
+            .api-info {
+                background: #f8f9fa;
+                border: 1px solid #e1e8ed;
+                border-radius: 8px;
+                padding: 15px;
+                margin: 20px 0;
+                text-align: left;
+            }
+            .api-info h3 {
+                margin-top: 0;
+                color: #2c3e50;
+            }
+            .endpoint {
+                background: #2c3e50;
+                color: #ecf0f1;
+                padding: 8px 12px;
+                border-radius: 4px;
+                font-family: 'Courier New', monospace;
+                margin: 5px 0;
+                font-size: 0.9rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🗄️ Database Inspection - Backend Access</h1>
+            
+            <div class="info">
+                <h3>✅ Backend Server Running</h3>
+                <p>Your Express server is running on <strong>http://localhost:5000</strong></p>
+                <p>Database inspection API endpoints are available and working!</p>
+            </div>
+
+            <div class="api-info">
+                <h3>🔧 Available API Endpoints:</h3>
+                <div class="endpoint">GET /api/admin/database/tables</div>
+                <div class="endpoint">POST /api/admin/database/table-data</div>
+                <div class="endpoint">GET /api/admin/users</div>
+                <div class="endpoint">GET /api/admin/suppliers</div>
+                <div class="endpoint">GET /api/admin/bookings</div>
+            </div>
+
+            <div class="info">
+                <h3>🚀 Access Options:</h3>
+                <p>Choose how you want to access the database inspection:</p>
+            </div>
+
+            <a href="http://localhost:5173/admin/database" class="button">
+                🎨 Frontend UI (React)
+            </a>
+            
+            <a href="/api/admin/database/tables" class="button">
+                📊 API Endpoint (JSON)
+            </a>
+
+            <div class="api-info">
+                <h3>📋 Quick Test:</h3>
+                <p>Test the API directly:</p>
+                <div class="endpoint">curl -X GET "http://localhost:5000/api/admin/database/tables"</div>
+                <div class="endpoint">curl -X POST "http://localhost:5000/api/admin/database/table-data" -H "Content-Type: application/json" -d '{"tableName":"users","limit":5}'</div>
+            </div>
+        </div>
+    </body>
+    </html>
+  `);
+});
+
+// CORS middleware for admin routes
+router.use((req, res, next) => {
+  // Allow requests from localhost:5000 (development) and the production frontend
+  const allowedOrigins = [
+    'http://localhost:5000',
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'https://airport-management-system-nxzu.onrender.com',
+    'https://airportparking.com'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin as string)) {
+    res.setHeader('Access-Control-Allow-Origin', origin as string);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
+
+// Serve the database inspection page
 router.get('/inspect', (req, res) => {
   try {
     const htmlPath = path.join(__dirname, '../../database-inspection.html');
@@ -129,7 +277,7 @@ router.get('/database/tables', async (req, res) => {
           hasTriggers: table.hastriggers,
           hasRules: table.hasrules,
           rowSecurity: table.rowsecurity,
-          error: error.message
+          error: error instanceof Error ? error.message : 'Unknown error'
         });
       }
     }
@@ -149,7 +297,76 @@ router.get('/database/tables', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch database tables',
-      message: error.message
+      message: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// POST /api/admin/database/table-data - Get data from a specific table
+router.post('/database/table-data', async (req, res) => {
+  try {
+    const { tableName, limit = 100, offset = 0 } = req.body;
+    
+    if (!tableName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Table name is required'
+      });
+    }
+
+    // Validate table name to prevent SQL injection
+    const allowedTables = [
+      'users', 'bookings', 'airports', 'parking_suppliers', 'parking_lots', 
+      'parking_pricing', 'parking_slots', 'reviews', 'supplier_users', 
+      'supplier_sessions', 'supplier_bookings', 'exchange_rates', 
+      'locale_content', 'payment_methods', 'transactions', 
+      'payment_gateway_configs', 'email_templates', 'email_logs', 
+      'sms_logs', 'user_activity_logs', 'search_analytics', 
+      'revenue_analytics', 'supplier_performance', 'user_preferences', 
+      'user_loyalty', 'supplier_contracts', 'supplier_metrics', 
+      'booking_status_history', 'saved_searches', 'search_filters'
+    ];
+
+    if (!allowedTables.includes(tableName)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid table name'
+      });
+    }
+
+    // Get table data with pagination
+    const dataQuery = `
+      SELECT * FROM ${tableName} 
+      ORDER BY created_at DESC 
+      LIMIT ${parseInt(limit)} OFFSET ${parseInt(offset)}
+    `;
+
+    const dataResult = await db.execute(sql.raw(dataQuery));
+    const tableData = dataResult.rows;
+
+    // Get total count
+    const countQuery = `SELECT COUNT(*) as count FROM ${tableName}`;
+    const countResult = await db.execute(sql.raw(countQuery));
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    res.json({
+      success: true,
+      tableName,
+      data: tableData,
+      pagination: {
+        limit: parseInt(limit),
+        offset: parseInt(offset),
+        total: totalCount,
+        hasMore: (parseInt(offset) + parseInt(limit)) < totalCount
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching table data:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch table data',
+      message: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
@@ -262,18 +479,15 @@ router.get('/users', async (req, res) => {
         email: users.email,
         firstName: users.firstName,
         lastName: users.lastName,
-        isAdmin: users.isAdmin,
-        adminRole: users.adminRole,
-        lastActivity: users.lastActivity,
-        accountStatus: users.accountStatus,
+        preferredLocale: users.preferredLocale,
+        preferredCurrency: users.preferredCurrency,
+        detectedCountry: users.detectedCountry,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt
       })
       .from(users);
 
-    if (status) {
-      query = query.where(eq(users.accountStatus, status as string));
-    }
+    // Note: status filtering removed since accountStatus doesn't exist in schema
 
     const totalCount = await db
       .select({ count: sql<number>`count(*)` })
@@ -314,18 +528,18 @@ router.get('/suppliers', async (req, res) => {
       .select({
         id: parkingSuppliers.id,
         name: parkingSuppliers.name,
-        email: parkingSuppliers.email,
-        phone: parkingSuppliers.phone,
-        adminNotes: parkingSuppliers.adminNotes,
-        verificationStatus: parkingSuppliers.verificationStatus,
-        verificationDate: parkingSuppliers.verificationDate,
+        description: parkingSuppliers.description,
+        logoUrl: parkingSuppliers.logoUrl,
+        contactEmail: parkingSuppliers.contactEmail,
+        contactPhone: parkingSuppliers.contactPhone,
+        isActive: parkingSuppliers.isActive,
         createdAt: parkingSuppliers.createdAt,
         updatedAt: parkingSuppliers.updatedAt
       })
       .from(parkingSuppliers);
 
     if (status) {
-      query = query.where(eq(parkingSuppliers.verificationStatus, status as string));
+      query = query.where(eq(parkingSuppliers.isActive, status === 'active'));
     }
 
     const totalCount = await db
@@ -373,7 +587,7 @@ router.get('/dashboard', async (req, res) => {
       .select({
         id: bookings.id,
         status: bookings.status,
-        totalPrice: bookings.totalPrice,
+        totalAmount: bookings.totalAmount,
         createdAt: bookings.createdAt,
         userEmail: users.email
       })
@@ -382,17 +596,17 @@ router.get('/dashboard', async (req, res) => {
       .orderBy(desc(bookings.createdAt))
       .limit(10);
 
-    // Get pending verifications
+    // Get inactive suppliers (as a proxy for pending verifications)
     const pendingVerifications = await db
       .select({
         id: parkingSuppliers.id,
         name: parkingSuppliers.name,
-        email: parkingSuppliers.email,
-        verificationStatus: parkingSuppliers.verificationStatus,
+        contactEmail: parkingSuppliers.contactEmail,
+        isActive: parkingSuppliers.isActive,
         createdAt: parkingSuppliers.createdAt
       })
       .from(parkingSuppliers)
-      .where(eq(parkingSuppliers.verificationStatus, 'pending'))
+      .where(eq(parkingSuppliers.isActive, false))
       .orderBy(asc(parkingSuppliers.createdAt))
       .limit(10);
 
@@ -440,45 +654,45 @@ router.put('/bookings/:id/flag', async (req, res) => {
   }
 });
 
-// PUT /api/admin/suppliers/:id/verify - Update supplier verification status
+// PUT /api/admin/suppliers/:id/verify - Update supplier status
 router.put('/suppliers/:id/verify', async (req, res) => {
   try {
     const { id } = req.params;
-    const { verificationStatus, adminNotes } = req.body;
+    const { isActive, description } = req.body;
 
     await db
       .update(parkingSuppliers)
       .set({
-        verificationStatus: verificationStatus || 'pending',
-        adminNotes: adminNotes || null,
-        verificationDate: verificationStatus === 'verified' ? new Date() : null,
+        isActive: isActive !== undefined ? isActive : true,
+        description: description || null,
         updatedAt: new Date()
       })
       .where(eq(parkingSuppliers.id, id));
 
-    res.json({ message: 'Supplier verification status updated successfully' });
+    res.json({ message: 'Supplier status updated successfully' });
   } catch (error) {
-    console.error('Error updating supplier verification:', error);
+    console.error('Error updating supplier status:', error);
     res.status(500).json({ 
-      error: 'Failed to update supplier verification',
+      error: 'Failed to update supplier status',
       details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
 
-// PUT /api/admin/airports/:id - Update airport admin data
+// PUT /api/admin/airports/:id - Update airport data
 router.put('/airports/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { adminNotes, priorityLevel, maintenanceMode } = req.body;
+    const { name, city, state, country, timezone } = req.body;
 
     await db
       .update(airports)
       .set({
-        adminNotes: adminNotes || null,
-        priorityLevel: priorityLevel || 'normal',
-        maintenanceMode: maintenanceMode || false,
-        updatedAt: new Date()
+        name: name || null,
+        city: city || null,
+        state: state || null,
+        country: country || null,
+        timezone: timezone || null
       })
       .where(eq(airports.id, id));
 

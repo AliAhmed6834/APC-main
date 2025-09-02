@@ -1,4 +1,4 @@
-import { db } from './server/db.js';
+import { db } from './server/db.ts';
 import { sql } from 'drizzle-orm';
 
 console.log('🔍 Checking Admin Dashboard Database Tables...\n');
